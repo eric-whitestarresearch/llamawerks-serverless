@@ -13,9 +13,10 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-import pulumi
+from pulumi import ResourceOptions
 from pulumi_aws import apigateway, iam
 import pulumi_aws as aws
+from time import sleep
 
 class MISSINGENDPOINTEXCEPTION(BaseException):
   pass
@@ -107,8 +108,12 @@ def api_gateway(name, openai_spec_path, description, environment, vpc_id, privat
     rest_api_gw_policy = apigateway.RestApiPolicy(f"{name}-{environment}-policy",
                                                   rest_api_id=rest_api_gw.id,
                                                   policy=resource_policy.json)
-  
+    deployment_opts = ResourceOptions(depends_on=[rest_api_gw_policy])
+  else:
+    deployment_opts = None
+
   deployment = apigateway.Deployment(f"{name}-{environment}",
                                      rest_api=rest_api_gw.id,
                                      description=f"{environment} deployment",
-                                     stage_name=environment)
+                                     stage_name=environment,
+                                     opts=deployment_opts)
