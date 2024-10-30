@@ -15,7 +15,7 @@
 
 import boto3
 
-def get(name):
+def get(name, withDecryption = False):
   """
   Gets the SSM Parameter and returns it
 
@@ -31,6 +31,6 @@ def get(name):
 
   #If the parameter does not exist or we don't have permissions to it, just halt and catch fire. 
   #This isn't important enough for error handling
-  response = ssm_client.get_parameters(Names=[name])
+  response = ssm_client.get_parameters(Names=[name],WithDecryption=withDecryption)
 
   return {"Parameter": response['Parameters'][0]}

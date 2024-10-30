@@ -166,3 +166,5 @@ Pulumi.dev.yaml
 #Don't check in the openapi artifacts so they will always have to be build.
 _build
 openapi.yaml
+
+sevenv
