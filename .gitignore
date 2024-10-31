@@ -168,3 +168,5 @@ _build
 openapi.yaml
 
 sevenv
+package.zip
+.DS_Store

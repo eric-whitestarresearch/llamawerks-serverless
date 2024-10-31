@@ -32,8 +32,11 @@ def get_data_collections(event, context):
   
   dc = DataCollection(Database())
   
-  pack_name = event['pack_name']
-  data_collection_name = event['data_collecton_name']
+  pack_name = event['pathParameters']['pack_name']
+  data_collection_name = None
+  if event['queryStringParameters']:
+    if 'data_collection_name' in event['queryStringParameters']:
+      data_collection_name = event['queryStringParameters']['data_collection_name']    
 
   return dc.get_data_collections(pack_name, data_collection_name)
   

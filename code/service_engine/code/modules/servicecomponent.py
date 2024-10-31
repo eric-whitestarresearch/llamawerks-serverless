@@ -12,6 +12,7 @@
 #      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
+import json
 
 class ServiceComponent:
   """
@@ -76,16 +77,16 @@ class ServiceComponent:
     if service_component_name:
       db_filter = {"pack": pack_name, "name": service_component_name}
       if not self.service_component_exists(pack_name, service_component_name):
-        return {"statusCode": 404, "body": f"Could not find {self.component_type_name} {service_component_name} in pack {pack_name}"}
+        return {"statusCode": 404, "body": f"Could not find {self.component_type_name} {service_component_name} in pack {pack_name}", "headers": {}}
     else:
       db_filter = {"pack": pack_name}
       
     service_items = self.db_client.find_all_in_collection(self.db_collection,db_filter)
 
     if not len(service_items):
-      return {"body": service_items, "statusCode": 204} #The pack has no service items
+      return {"body": json.dumps(service_items), "statusCode": 204, "headers": {}} #The pack has no service items
     else:  
-      return {"body": service_items, "statusCode": 200}
+      return {"body": json.dumps(service_items), "statusCode": 200, "headers": {}}
     
   def delete_service_component(self, pack_name, service_component_name):
     """

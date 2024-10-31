@@ -64,7 +64,7 @@ api_gateway_endpoint = vpc_endpoint(f"lw_api_gw_{environment}",
                                     )
 
 rest_api_gw = api_gateway(f"lw_api_gw_{environment}",
-                          "./sample_api.yaml",
+                          "./openapi.yaml",
                           "The rest api for serverless llamawerks",
                           environment,
                           vpc_id=IAC_CONFIG['vpc']['vpc_id'],

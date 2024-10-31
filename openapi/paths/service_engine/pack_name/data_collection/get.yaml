@@ -26,3 +26,8 @@ responses:
     description: Could not find the data collection in the pack
 tags:
   - Data Collection
+x-amazon-apigateway-integration:
+  uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:blarf/invocations
+  type: aws_proxy
+  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/AllowApiGatewayBlarfRun
+  httpMethod: POST
