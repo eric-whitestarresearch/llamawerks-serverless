@@ -21,6 +21,20 @@ from .aws_lambda_sg import aws_lambda_sg
 
 
 def aws_lambda(name, package_location, package_checksum_location, handler, subnets, vpc_id):
+  """
+  Create a Lambda Function in AWS
+
+  Parameters:
+    name (String): The name of the lambda function
+    package_location (String): The location of the zip file with the code
+    package_checksum_location (String): The location of the file with the checksum for the package
+    handler (String): The hander in the code for the lambda function
+    subnets (List(string)): A list of subnet ids in the VPC that the lambda should attach to
+    vpc_id (String): The VPC ID of the VPC the lambda attaches to
+
+  Returns:
+    None
+  """
 
   with open(package_checksum_location,'r') as sum_file:
     package_checksum = sum_file.readline().rstrip()

@@ -13,7 +13,6 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-import pulumi
 from pulumi_aws import ec2, vpc
 
 def aws_lambda_sg(vpc_id, lambda_name):
@@ -21,7 +20,7 @@ def aws_lambda_sg(vpc_id, lambda_name):
   Create a Security group used by the VPC Connection of a Lambda function
 
   Parameters:
-    vpc_id (String): The ID of the VPC the endpoint is created in
+    vpc_id (String): The ID of the VPC the lambda is created in
     lambda_name: The name of the lambda function
 
   Returns:
