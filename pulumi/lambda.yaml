@@ -1,0 +1,6 @@
+---
+lambdas:
+  - name: lw_data_collections
+    package_location: "../code/service_engine/package.zip"
+    package_checksum_location: "../code/service_engine/package.sum"
+    handler: "data_collection.get_data_collections"

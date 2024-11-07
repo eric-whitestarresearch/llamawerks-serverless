@@ -21,7 +21,7 @@ from os import environ
 
 from modules.vpc_endpoint import vpc_endpoint
 from modules.api_gateway import api_gateway
-
+from modules.aws_lambda import aws_lambda
 class MisssingConfigException(BaseException):
   pass
 
@@ -70,3 +70,21 @@ rest_api_gw = api_gateway(f"lw_api_gw_{environment}",
                           vpc_id=IAC_CONFIG['vpc']['vpc_id'],
                           private=True,
                           endpoint_ids=[api_gateway_endpoint.id])
+
+with open('./lambda.yaml','r') as file:
+      lambda_configs = yaml.safe_load(file)
+
+aws_lambdas = [aws_lambda(name=l['name'],
+                           package_location=l['package_location'],
+                           package_checksum_location=l['package_checksum_location'],
+                           handler=l['handler'],
+                           subnets=subnets,
+                           vpc_id=IAC_CONFIG['vpc']['vpc_id']) for l in lambda_configs['lambdas']]
+
+
+# test_lambda = aws_lambda(name="lw_test",
+#                          package_location="../code/service_engine/package.zip",
+#                          package_checksum_location="../code/service_engine/package.sum",
+#                          handler="data_collection.get_data_collections",
+#                          subnets=subnets,
+#                          vpc_id=IAC_CONFIG['vpc']['vpc_id'])

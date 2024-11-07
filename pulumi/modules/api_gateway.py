@@ -16,7 +16,6 @@
 from pulumi import ResourceOptions
 from pulumi_aws import apigateway, iam
 import pulumi_aws as aws
-from time import sleep
 
 class MISSINGENDPOINTEXCEPTION(BaseException):
   pass

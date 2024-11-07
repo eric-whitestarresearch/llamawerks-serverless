@@ -13,6 +13,7 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 import json
+from .apigwresponse import api_gw_response
 
 class ServiceComponent:
   """
@@ -77,16 +78,16 @@ class ServiceComponent:
     if service_component_name:
       db_filter = {"pack": pack_name, "name": service_component_name}
       if not self.service_component_exists(pack_name, service_component_name):
-        return {"statusCode": 404, "body": f"Could not find {self.component_type_name} {service_component_name} in pack {pack_name}", "headers": {}}
+        return api_gw_response(404, f"Could not find {self.component_type_name} {service_component_name} in pack {pack_name}")
     else:
       db_filter = {"pack": pack_name}
       
     service_items = self.db_client.find_all_in_collection(self.db_collection,db_filter)
 
     if not len(service_items):
-      return {"body": json.dumps(service_items), "statusCode": 204, "headers": {}} #The pack has no service items
-    else:  
-      return {"body": json.dumps(service_items), "statusCode": 200, "headers": {}}
+      return api_gw_response(204, service_items)  #The pack has no service items
+    else: 
+      return api_gw_response(200, service_items)
     
   def delete_service_component(self, pack_name, service_component_name):
     """

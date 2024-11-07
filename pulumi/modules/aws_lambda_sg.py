@@ -16,36 +16,40 @@
 import pulumi
 from pulumi_aws import ec2, vpc
 
-def vpc_endpoint_sg(vpc_id, endpoint_name):
+def aws_lambda_sg(vpc_id, lambda_name):
   """
-  Create a Security group that allows the VPC to access a VPC Endpoint
+  Create a Security group used by the VPC Connection of a Lambda function
 
   Parameters:
     vpc_id (String): The ID of the VPC the endpoint is created in
-    endpoint_name: The name of the VPC endpoint
+    lambda_name: The name of the lambda function
 
   Returns:
     A pulumi object with a security group
   """
 
   target_vpc = ec2.get_vpc(id=vpc_id)
-  sg_name = f"{endpoint_name}_vpc_ep_sg"
+  sg_name = f"{lambda_name}_lambda_sg"
   tags = {
     "Name": sg_name,
     "managed_by": "pulumi"
   }
-  vpc_ep_sg = ec2.SecurityGroup(sg_name,
+  aws_lambda_sg = ec2.SecurityGroup(sg_name,
                                 name = sg_name,
-                                description="Allow VPC to access endpoint",
+                                description="Allow Lambda VPC Access",
                                 vpc_id=vpc_id,
                                 tags=tags)
   
-  vpc_ep_sg_ingress_rule = vpc.SecurityGroupIngressRule("allow_vpc_ep",
-                                                        security_group_id=vpc_ep_sg.id,
+  aws_lambda_sg_ingress_rule = vpc.SecurityGroupIngressRule("allow_lambda_vpc",
+                                                        security_group_id=aws_lambda_sg.id,
                                                         cidr_ipv4=target_vpc.cidr_block,
-                                                        from_port=443,
-                                                        to_port=443,
-                                                        ip_protocol='tcp')
+                                                        ip_protocol=-1)
   
-  return vpc_ep_sg
+  aws_lambda_sg_egress_rule = vpc.SecurityGroupEgressRule("allow_lambda_out",
+                                                          security_group_id=aws_lambda_sg.id,
+                                                          cidr_ipv4="0.0.0.0/0",
+                                                          ip_protocol=-1)
+  
+  
+  return aws_lambda_sg
   

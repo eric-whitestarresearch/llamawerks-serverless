@@ -166,7 +166,13 @@ Pulumi.dev.yaml
 #Don't check in the openapi artifacts so they will always have to be build.
 _build
 openapi.yaml
+openapi.json
+
+#This openapi spec isn't generated. So we do want to check it in.
+!code/ssm_parameter_cache_local/code/openapi.yaml 
 
 sevenv
+ssmvenv
 package.zip
+package.sum
 .DS_Store
