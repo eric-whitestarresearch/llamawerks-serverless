@@ -26,3 +26,8 @@ responses:
           $ref: "../../../../schemas/_index.yaml#/serviceComponentDeleted"
 tags:
   - Service
+x-amazon-apigateway-integration:
+  uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_service_delete_service/invocations
+  type: aws_proxy
+  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_delete_service_role
+  httpMethod: POST

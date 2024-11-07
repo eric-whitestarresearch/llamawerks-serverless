@@ -40,7 +40,7 @@ def vpc_endpoint_sg(vpc_id, endpoint_name):
                                 vpc_id=vpc_id,
                                 tags=tags)
   
-  vpc_ep_sg_ingress_rule = vpc.SecurityGroupIngressRule("allow_vpc_ep",
+  vpc_ep_sg_ingress_rule = vpc.SecurityGroupIngressRule(f"allow_vpc_ep_{endpoint_name}",
                                                         security_group_id=vpc_ep_sg.id,
                                                         cidr_ipv4=target_vpc.cidr_block,
                                                         from_port=443,

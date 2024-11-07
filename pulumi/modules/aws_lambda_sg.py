@@ -39,12 +39,12 @@ def aws_lambda_sg(vpc_id, lambda_name):
                                 vpc_id=vpc_id,
                                 tags=tags)
   
-  aws_lambda_sg_ingress_rule = vpc.SecurityGroupIngressRule("allow_lambda_vpc",
+  aws_lambda_sg_ingress_rule = vpc.SecurityGroupIngressRule(f"allow_lambda_vpc_{lambda_name}",
                                                         security_group_id=aws_lambda_sg.id,
                                                         cidr_ipv4=target_vpc.cidr_block,
                                                         ip_protocol=-1)
   
-  aws_lambda_sg_egress_rule = vpc.SecurityGroupEgressRule("allow_lambda_out",
+  aws_lambda_sg_egress_rule = vpc.SecurityGroupEgressRule(f"allow_lambda_out_{lambda_name}",
                                                           security_group_id=aws_lambda_sg.id,
                                                           cidr_ipv4="0.0.0.0/0",
                                                           ip_protocol=-1)

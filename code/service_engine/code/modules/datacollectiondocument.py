@@ -13,11 +13,14 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-from flask import abort
 from .datacollectionfilter import DataCollectionFilter
 from .datacollection import DataCollection
+from .apigwresponse import api_gw_response
+
 from ast import literal_eval
 from bson.objectid import ObjectId
+
+
 
 
 class DataCollectionDocument():
@@ -64,7 +67,7 @@ class DataCollectionDocument():
     """
 
     if not self.dc.data_collection_exist(pack_name, data_collection_name):
-      abort(404, f"The data collection {data_collection_name}, does not exist in pack {pack_name}")
+      api_gw_response(404, f"The data collection {data_collection_name}, does not exist in pack {pack_name}")
     
     return
 
@@ -88,9 +91,9 @@ class DataCollectionDocument():
     documents = self.db_client.find_all_in_collection(db_collection,db_filter)
 
     if len(documents) > 0:
-      return documents, 200
+      return api_gw_response(200, documents)
     else:
-      return documents, 204
+      return api_gw_response(204, documents)
   
   def get_document_with_filter(self, pack_name, data_collection_name, filter_name, filter_variables, project):
     """
@@ -119,9 +122,9 @@ class DataCollectionDocument():
     documents = self.db_client.find_all_in_collection(db_collection,db_filter, db_projection)
 
     if len(documents) > 0:
-      return documents, 200
+      return api_gw_response(200, documents)
     else:
-      return documents, 204
+      return api_gw_response(204, documents)
   
   def generate_db_filter_projection(self, pack_name, filter_name, filter_variables, gen_projection = False):
     """
@@ -177,7 +180,7 @@ class DataCollectionDocument():
     db_collection = f"{pack_name}.{data_collection_name}"
     result = self.db_client.insert_document(db_collection, document)
 
-    return {"id":result}, 200
+    return api_gw_response(200, {"id":result})
   
   def update_document(self, pack_name, data_collection_name, filter_name, filter_variables, document_updates):
     """
@@ -203,7 +206,7 @@ class DataCollectionDocument():
 
     result = self.db_client.update_document(db_collection, db_filter, document_updates, upsert=False)
 
-    return {"updated" : result}, 200
+    return api_gw_response(200, {"updated" : result})
 
   def get_document_by_id(self, pack_name, data_collection_name, document_id):
     """
@@ -227,9 +230,9 @@ class DataCollectionDocument():
     documents = self.db_client.find_one_in_collection(db_collection,db_filter)
 
     if not documents:
-      abort(404, f"A document with id {document_id} not found in data collection {data_collection_name} in pack {pack_name}")
+      api_gw_response(404, f"A document with id {document_id} not found in data collection {data_collection_name} in pack {pack_name}")
     else:
-      return documents, 200
+      return api_gw_response(200, documents)
   
   def update_document_by_id(self, pack_name, data_collection_name, document_id, document):
     """
@@ -253,7 +256,7 @@ class DataCollectionDocument():
 
     result = self.db_client.update_document(db_collection, db_filter, document, upsert=False)
 
-    return {"updated" : result}, 200
+    return api_gw_response(200, {"updated" : result})
   
   def delete_document_by_id(self, pack_name, data_collection_name, document_id ):
     """
@@ -276,5 +279,5 @@ class DataCollectionDocument():
 
     result = self.db_client.delete_document(db_collection, db_filter)
 
-    return {"deleted": result}, 200
+    return api_gw_response(200, {"deleted": result})
   

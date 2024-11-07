@@ -43,3 +43,8 @@ responses:
     description: The pack name specified in the URI and the data collection definition do not match
 tags:
   - Data Collection
+x-amazon-apigateway-integration:
+  uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_create_data_collection/invocations
+  type: aws_proxy
+  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_create_data_collection_role
+  httpMethod: POST

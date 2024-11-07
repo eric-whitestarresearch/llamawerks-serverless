@@ -13,74 +13,89 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-from connexion import request
 from modules.datacollectionfilter import DataCollectionFilter
+from modules.database import Database
 
-def get_data_collection_filter(pack_name, filter_name = None):
+def get_data_collection_filter(event,context):
   """
   Reurns the definition of the data collection filter(s)
 
   Parameters:
-    pack_name (String): The name of the pack to return the data collections for
-    filter_name (String): The name of the data collection filter to retreive (Optional)
-
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+  
   Returns:
-    List: A list of dictonaries that contain the data collection filter definition(s)
+    Dict: Key: id value: the id of the new data collection
     Int: HTTP status code
   """
   
-  dcf = DataCollectionFilter(request.state.db_client)
+  dcf = DataCollectionFilter(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  filter_name = None
+  if event['queryStringParameters']:
+    if 'data_collection_name' in event['queryStringParameters']:
+      data_collection_name = event['queryStringParameters']['filter_name']    
   
   return dcf.get_data_collection_filters(pack_name, filter_name)
 
 
 
-def create_data_collection_filter(pack_name,data_collection_filter_definition):
+def create_data_collection_filter(event, context):
   """
   Creates a new data collection filter
 
   Parameters:
     pack_name (String): The name of the pack to create the data collections in
-    data_collection_filter_definition (Dict): The definition of the data collection filter
+    data_collection_definition (Dict): The definition of the data collection
   
   Returns:
-    Dict: Key: id value: the id of the new data collection filter
+    Dict: Key: id value: the id of the new data collection
     Int: HTTP status code
   """
-  dcf = DataCollectionFilter(request.state.db_client)
+  dcf = DataCollectionFilter(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  data_collection_filter_definition = event['body']
 
   return dcf.create_data_collection_filter(pack_name,data_collection_filter_definition)
 
-def update_data_collection_filter(pack_name, data_collection_filter_definition):
+def update_data_collection_filter(event, context):
   """
   Updates a data collection_filter
 
   Parameters:
-    pack_name (String): The name of the pack to create the data collection filter in
-    data_collection_definition (Dict): The definition of the data collection filter
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
   
   Returns:
-    Dict: Key: updated, value: a count of the updated data collection filter
+    Dict: Key: id value: the id of the new data collection
     Int: HTTP status code
   """
   
-  dcf = DataCollectionFilter(request.state.db_client)
+  dcf = DataCollectionFilter(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  data_collection_filter_definition = event['body']
 
   return dcf.update_data_collection_filter(pack_name,data_collection_filter_definition)
 
-def delete_data_collection_filter(pack_name, filter_name):
+def delete_data_collection_filter(event, context):
   """
   Deletes a data collection filter
 
   Parameters:
-    pack_name (String): The name of the pack the data collection filter is in
-    filter_name (String): The name of the data collection filter to delete
-
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+  
   Returns:
-    Dict: Key: deleted value: a count of the data collection filter deleted
+    Dict: Key: id value: the id of the new data collection
     Int: HTTP status code
   """
   
-  dcf = DataCollectionFilter(request.state.db_client)
+  dcf = DataCollectionFilter(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  filter_name = event['pathParameters']['filter_name']
 
   return dcf.delete_data_collection_filter(pack_name, filter_name)

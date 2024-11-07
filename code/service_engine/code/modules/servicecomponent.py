@@ -105,7 +105,7 @@ class ServiceComponent:
     db_filter = {'pack' : pack_name, 'name': service_component_name}
     delete_count = self.db_client.delete_document(self.db_collection, db_filter)
 
-    return {"deleted" : delete_count}, 200
+    return api_gw_response(200, {"deleted" : delete_count})
   
 
   def create_service_component(self,pack_name,service_component_definition):
@@ -122,19 +122,19 @@ class ServiceComponent:
     """
     
     if pack_name != service_component_definition['pack']:
-      abort(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
+      api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
     
     #Check to see if this data collection already exists. If it does, don't create it again.
     filter = {'pack': pack_name, 'name': service_component_definition['name']}
     data_collection = self.db_client.find_all_in_collection(self.db_collection, filter)
 
     if len(data_collection):
-      return { "id": data_collection[0]['_id']['$oid'] } , 200
+      return api_gw_response(200, { "id": data_collection[0]['_id']['$oid'] })
     
     new_service_component_id = self.db_client.insert_document(self.db_collection, service_component_definition)
 
 
-    return { "id": new_service_component_id } , 201
+    return api_gw_response(201, { "id": new_service_component_id })
   
   def update_serivce_component(self, pack_name, service_component_definition):
     """
@@ -150,21 +150,21 @@ class ServiceComponent:
     """
     
     if pack_name != service_component_definition['pack']:
-      abort(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
+      api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
 
     #Check to see if this service component already exists. If it does not, stop.
     filter = {'pack': pack_name, 'name': service_component_definition['name']}
     data_collection = self.db_client.find_one_in_collection(self.db_collection, filter)
 
     if not data_collection:
-      abort(404, f"The {self.component_type_name}  {service_component_definition['collection_name']} in pack {pack_name} does not exist. Use put method to create it")
+      api_gw_response(404, f"The {self.component_type_name}  {service_component_definition['collection_name']} in pack {pack_name} does not exist. Use put method to create it")
 
     update_count = self.db_client.update_document(self.db_collection, filter, service_component_definition)
 
     if update_count:
-      return { "updated" : update_count }, 202
+      return api_gw_response(202, { "updated" : update_count })
     else:
-      return { "updated" : 0 }, 208
+      return api_gw_response(208, { "updated" : 0 })
       
 
 

@@ -13,73 +13,84 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-from connexion import request
 from modules.service import Service
+from modules.database import Database
 
 
-def get_services(pack_name, service_name = None):
+def get_services(event, context):
   """
   Reurns the definition of the service(s)
 
   Parameters:
-    pack_name (String): The name of the pack to return the service(s) for
-    collection_name (String): The name of the service to retreive (Optional)
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
 
   Returns:
-    List: A list of dictonaries that contain the service definition(s)
-    Int: HTTP status code
+    Dict: A dictonary with the response data for API Gateway.
   """
   
-  service = Service(request.state.db_client)
+  service = Service(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  service_name = None
+  if event['queryStringParameters']:
+    if 'data_collection_name' in event['queryStringParameters']:
+      service_name = event['queryStringParameters']['service_name']    
   
   return service.get_services(pack_name, service_name)
   
-def delete_service(pack_name, service_name):
+def delete_service(event, context):
   """
   Deletes a service
 
   Parameters:
-    pack_name (String): The name of the pack the service is in
-    collection_name (String): The name of the service to delete
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
 
   Returns:
-    Dict: Key: deleted value: a count of the service deleted
-    Int: HTTP status code
+    Dict: A dictonary with the response data for API Gateway.
   """
   
-  service = Service(request.state.db_client)
+  service = Service(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  service_name = event['queryStringParameters']['service_name']    
 
   return service.delete_service(pack_name, service_name)
 
-def create_service(pack_name,service_definition):
+def create_service(event, context):
   """
   Creates a new service
 
   Parameters:
-    pack_name (String): The name of the pack to create the services in
-    service_definition (Dict): The definition of the service
-  
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
+
   Returns:
-    Dict: Key: id value: the id of the new service
-    Int: HTTP status code
+    Dict: A dictonary with the response data for API Gateway.
   """
-  service = Service(request.state.db_client)
+  service = Service(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  service_definition = event['body']
 
   return service.create_service(pack_name,service_definition)
 
-def update_service(pack_name, service_definition):
+def update_service(event, context):
   """
   Updates a service
 
   Parameters:
-    pack_name (String): The name of the pack to the service is in
-    service_definition (Dict): The definition of the service
-  
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
+
   Returns:
-    Dict: Key: updated, value: a count of the updated service
-    Int: HTTP status code
+    Dict: A dictonary with the response data for API Gateway.
   """
   
-  service = Service(request.state.db_client)
+  service = Service(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  service_definition = event['body']
 
   return service.update_service(pack_name,service_definition)

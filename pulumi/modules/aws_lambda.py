@@ -53,7 +53,7 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
     assume_role_policy=assume_policy.json)
 
 
-  policy_allowKmsDecrypt = aws.iam.RolePolicy("allowKmsDecrypt",
+  policy_allowKmsDecrypt = aws.iam.RolePolicy(f"allowKmsDecrypt_{name}",
     name="allowKmsDecrypt",
     role=lambda_role.id,
     policy = dumps(
@@ -69,7 +69,7 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
         ]
       }))
   
-  policy_allowSSMParameterDBConfig = aws.iam.RolePolicy("allowSSMParameterDBConfig",
+  policy_allowSSMParameterDBConfig = aws.iam.RolePolicy(f"allowSSMParameterDBConfig_{name}",
     name="allowSSMParameterDBConfig",
     role=lambda_role.id,
     policy =dumps(
@@ -85,7 +85,7 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
           ] 
       }))
 
-  policy_lambdaExecution = aws.iam.RolePolicy("lambdaExecution",
+  policy_lambdaExecution = aws.iam.RolePolicy(f"lambdaExecution_{name}",
     name="lambdaExecution",
     role=lambda_role.id,
     policy= dumps(
@@ -110,7 +110,7 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
         ]
      }))
         
-  policy_allowVpcNicAdd = aws.iam.RolePolicy("allowVpcNicAdd",
+  policy_allowVpcNicAdd = aws.iam.RolePolicy(f"allowVpcNicAdd_{name}",
     name="allowVpcNicAdd",
     role=lambda_role.id,
     policy= dumps(
@@ -137,7 +137,7 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
   
   new_lambda = aws.lambda_.Function(name,
     code=code_package,
-    name=name,
+    name=f"lw_{name}",
     role=lambda_role.arn,
     handler=handler,
     source_code_hash=package_checksum,
@@ -161,10 +161,10 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
   }])
 
   api_lambda_role = aws.iam.Role(f"api_gw_lambda_{name}_role",
-    name=f"api_gw_lambda_{name}_role",
+    name=f"lw_api_{name}_role",
     assume_role_policy=api_assume_policy.json)
   
-  policy_allowApiGwLambdaRun = aws.iam.RolePolicy("allowApiGwLambdaRun",
+  policy_allowApiGwLambdaRun = aws.iam.RolePolicy(f"allowApiGwLambdaRun_{name}",
     name="allowApiGwLambdaRun",
     role=api_lambda_role.id,
     policy= dumps(
@@ -175,7 +175,7 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
                 "Effect": "Allow",
                 "Action": "lambda:InvokeFunction",
                 "Resource": [
-                    f"arn:aws:lambda:{aws.get_region().name}:{aws.get_caller_identity().account_id}:function:{name}"
+                    f"arn:aws:lambda:{aws.get_region().name}:{aws.get_caller_identity().account_id}:function:lw_{name}"
                 ]
             }
         ]

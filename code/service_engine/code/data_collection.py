@@ -22,12 +22,11 @@ def get_data_collections(event, context):
   Reurns the definition of the data collections
 
   Parameters:
-    pack_name (String): The name of the pack to return the data collections for
-    collection_name (String): The name of the data collection to retreive (Optional)
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
 
   Returns:
-    List: A list of dictonaries that contain the data collection definition(s)
-    Int: HTTP status code
+    Dict: A dictonary with the response data for API Gateway.
   """
   
   dc = DataCollection(Database())
@@ -40,52 +39,60 @@ def get_data_collections(event, context):
 
   return dc.get_data_collections(pack_name, data_collection_name)
   
-# def delete_data_collection(pack_name, data_collection_name):
-#   """
-#   Deletes a data collection
+def delete_data_collection(event, context):
+  """
+  Deletes a data collection
 
-#   Parameters:
-#     pack_name (String): The name of the pack the data collection is in
-#     collection_name (String): The name of the data collection to delete
+  Parameters:
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
 
-#   Returns:
-#     Dict: Key: deleted value: a count of the data collection deleted
-#     Int: HTTP status code
-#   """
+  Returns:
+    Dict: A dictonary with the response data for API Gateway.
+  """
   
-#   dc = DataCollection(request.state.db_client)
+  dc = DataCollection(Database())
 
-#   return dc.delete_data_collection(pack_name, data_collection_name)
+  pack_name = event['pathParameters']['pack_name']
+  data_collection_name = event['pathParameters']['data_collection_name']
 
-# def create_data_collection(pack_name,data_collection_definition):
-#   """
-#   Creates a new data collection
+  return dc.delete_data_collection(pack_name, data_collection_name)
 
-#   Parameters:
-#     pack_name (String): The name of the pack to create the data collections in
-#     data_collection_definition (Dict): The definition of the data collection
+def create_data_collection(event, context):
+  """
+  Creates a new data collection
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
   
-#   Returns:
-#     Dict: Key: id value: the id of the new data collection
-#     Int: HTTP status code
-#   """
-#   dc = DataCollection(request.state.db_client)
+  Returns:
+    Dict: Key: id value: the id of the new data collection
+    Int: HTTP status code
+  """
+  dc = DataCollection(Database())
 
-#   return dc.create_data_collection(pack_name,data_collection_definition)
+  pack_name = event['pathParameters']['pack_name']
+  data_collection_definition = event['body']
 
-# def update_data_collection(pack_name, data_collection_definition):
-#   """
-#   Updates a data collection
+  return dc.create_data_collection(pack_name,data_collection_definition)
 
-#   Parameters:
-#     pack_name (String): The name of the pack to create the data collections in
-#     data_collection_definition (Dict): The definition of the data collection
+def update_data_collection(event, context):
+  """
+  Updates a data collection
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
   
-#   Returns:
-#     Dict: Key: updated, value: a count of the updated data collection
-#     Int: HTTP status code
-#   """
+  Returns:
+    Dict: Key: updated, value: a count of the updated data collection
+    Int: HTTP status code
+  """
   
-#   dc = DataCollection(request.state.db_client)
+  dc = DataCollection(Database())
 
-#   return dc.update_data_collection(pack_name,data_collection_definition)
+  pack_name = event['pathParameters']['pack_name']
+  data_collection_definition = event['body']
+
+  return dc.update_data_collection(pack_name,data_collection_definition)
