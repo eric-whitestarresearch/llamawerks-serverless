@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: ericwsr/ssm_proxy:4
+    container_name: ssm_proxy
+    hostname: ssm_proxy
+    volumes:
+      - type: bind
+        source: ~/.aws
+        target: /root/.aws
+    ports:
+      - 2773:2773
+

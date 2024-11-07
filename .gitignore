@@ -160,3 +160,19 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+Pulumi.dev.yaml
+
+#Don't check in the openapi artifacts so they will always have to be build.
+_build
+openapi.yaml
+openapi.json
+
+#This openapi spec isn't generated. So we do want to check it in.
+!code/ssm_parameter_cache_local/code/openapi.yaml 
+
+sevenv
+ssmvenv
+package.zip
+package.sum
+.DS_Store

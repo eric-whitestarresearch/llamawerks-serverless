@@ -1,0 +1,79 @@
+---
+lambdas:
+  - handler: data_collection.create_data_collection
+    name: data_collection_create_data_collection
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: data_collection.delete_data_collection
+    name: data_collection_delete_data_collection
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: data_collection.get_data_collections
+    name: data_collection_get_data_collections
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: document.create_document
+    name: document_create_document
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: document.get_documents
+    name: document_get_documents
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: document.delete_document_by_id
+    name: document_delete_document_by_id
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: document.get_document_by_id
+    name: document_get_document_by_id
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: document.update_document_by_id
+    name: document_update_document_by_id
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: document.get_document_with_filter
+    name: document_get_document_with_filter
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: document.update_document_by_filter
+    name: document_update_document_by_filter
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: data_collection.update_data_collection
+    name: data_collection_update_data_collection
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: data_collection_filter.create_data_collection_filter
+    name: data_collection_filter_create_data_collection_filter
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: data_collection_filter.delete_data_collection_filter
+    name: data_collection_filter_delete_data_collection_filter
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: data_collection_filter.get_data_collection_filter
+    name: data_collection_filter_get_data_collection_filter
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: data_collection_filter.update_data_collection_filter
+    name: data_collection_filter_update_data_collection_filter
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: service.delete_service
+    name: service_delete_service
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: service.create_service
+    name: service_create_service
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: service.get_services
+    name: service_get_services
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: service.update_service
+    name: service_update_service
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+
