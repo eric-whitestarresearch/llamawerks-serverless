@@ -24,6 +24,7 @@ import urllib.request
 import os
 from bson.json_util import dumps
 from json import loads
+import logging
 
 class DBConfigValidationError(ValidationError):
   pass
@@ -56,11 +57,13 @@ class Database:
       self (Database): The object itself
     """
 
+    logging.info("Databse INIT")
     aws_token = os.environ.get('AWS_SESSION_TOKEN')
 
     if aws_token == None:
       raise MissingAWSToken("The environment variable for AWS_SESSION_TOKEN is not set")
     
+    logging.info("Getting DB Config")
     req = urllib.request.Request('http://localhost:2773/systemsmanager/parameters/get?name=llamawerks_db_config&withDecryption=true')
     req.add_header('X-Aws-Parameters-Secrets-Token', aws_token)
     result = urllib.request.urlopen(req).read()
@@ -76,6 +79,7 @@ class Database:
     username = urllib.parse.quote_plus(db_config['username'])
     password = urllib.parse.quote_plus(db_config['password'])
   
+    logging.info(f"Connecting to db host: {db_config['host']} database: {db_config['database']} ")
     self.connection =  MongoClient(f"mongodb://{username}:{password}@{db_config['host']}:{db_config['port']}")
     self.database_name = db_config['database']
 

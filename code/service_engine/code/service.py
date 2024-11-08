@@ -15,6 +15,9 @@
 
 from modules.service import Service
 from modules.database import Database
+from json import loads
+import logging
+import modules.logger
 
 
 def get_services(event, context):
@@ -29,6 +32,9 @@ def get_services(event, context):
     Dict: A dictonary with the response data for API Gateway.
   """
   
+  logging.info("Starting get_services")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -51,6 +57,9 @@ def delete_service(event, context):
     Dict: A dictonary with the response data for API Gateway.
   """
   
+  logging.info("Starting delete_service")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -69,10 +78,14 @@ def create_service(event, context):
   Returns:
     Dict: A dictonary with the response data for API Gateway.
   """
+
+  logging.info("Starting create_service")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  service_definition = event['body']
+  service_definition = loads(event['body'])
 
   return service.create_service(pack_name,service_definition)
 
@@ -88,9 +101,12 @@ def update_service(event, context):
     Dict: A dictonary with the response data for API Gateway.
   """
   
+  logging.info("Starting update_service")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  service_definition = event['body']
+  service_definition = loads(event['body'])
 
   return service.update_service(pack_name,service_definition)

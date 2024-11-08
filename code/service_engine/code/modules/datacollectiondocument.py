@@ -19,6 +19,7 @@ from .apigwresponse import api_gw_response
 
 from ast import literal_eval
 from bson.objectid import ObjectId
+from json import loads
 
 
 
@@ -145,10 +146,11 @@ class DataCollectionDocument():
     #If the filter is not found the request will abort with a 404
     result = self.dcf.get_data_collection_filters(pack_name,filter_name)
     
-    
-    db_filter = result[0][0]['filter']
+    result_body = loads(result['body'])
+
+    db_filter = result_body['filter']
     db_filter_string = str(db_filter)
-    variables = result[0][0]['variables']
+    variables = result_body['variables']
     for var in variables:
       db_filter_string = db_filter_string.replace(f"#{var['name']}#",filter_variables[var['name']])
     db_filter = literal_eval(db_filter_string)
@@ -156,7 +158,7 @@ class DataCollectionDocument():
     if not gen_projection:
       return db_filter, {} 
     else:
-      fields = result[0][0]['project']
+      fields = result_body['project']
       projection = {fields[i]: 1 for i in range(0, len(fields))}
       projection['_id'] = 0 
       return db_filter, projection

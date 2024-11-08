@@ -104,7 +104,7 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
               "logs:PutLogEvents"
             ],
             "Resource": [
-              f"arn:aws:logs:{aws.get_region().name}:{aws.get_caller_identity().account_id}:log-group:/aws/lambda/{name}:*"
+              f"arn:aws:logs:{aws.get_region().name}:{aws.get_caller_identity().account_id}:log-group:/aws/lambda/lw_{name}:*"
             ]
           }
         ]
@@ -149,6 +149,10 @@ def aws_lambda(name, package_location, package_checksum_location, handler, subne
       "subnet_ids": subnets,
       "security_group_ids": [aws_lambda_sg(vpc_id,name)]
     })
+  
+  cw_group = aws.cloudwatch.LogGroup(name,
+    name= f"/aws/lambda/lw_{name}",
+    retention_in_days=7)
   
   #Generate the role that allows API gateway to execute this lamba
   api_assume_policy = aws.iam.get_policy_document(statements=[{
