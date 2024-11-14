@@ -41,8 +41,8 @@ def get_data_collection_filter(event,context):
   pack_name = event['pathParameters']['pack_name']
   filter_name = None
   if event['queryStringParameters']:
-    if 'data_collection_name' in event['queryStringParameters']:
-      data_collection_name = event['queryStringParameters']['filter_name']    
+    if 'filter_name' in event['queryStringParameters']:
+      filter_name = event['queryStringParameters']['filter_name']    
   
   return dcf.get_data_collection_filters(pack_name, filter_name)
 
@@ -119,6 +119,6 @@ def delete_data_collection_filter(event, context):
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  filter_name = event['pathParameters']['filter_name']
+  filter_name = event['queryStringParameters']['filter_name']
 
   return dcf.delete_data_collection_filter(pack_name, filter_name)
