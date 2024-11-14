@@ -34,7 +34,13 @@ info:
   version: "0.1.0"
 servers:
   - url: "/api"
- 
+x-amazon-apigateway-request-validators: 
+  all:
+    validateRequestParameters : true
+    validateRequestBody: true
+  params-only:
+    validateRequestParameters: true
+    validateRequestBody: false
 components:
   schemas:
     $ref: "./schemas/_index.yaml"

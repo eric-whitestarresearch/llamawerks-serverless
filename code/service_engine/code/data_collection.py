@@ -64,7 +64,7 @@ def delete_data_collection(event, context):
   dc = DataCollection(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_name = event['pathParameters']['data_collection_name']
+  data_collection_name = event['queryStringParameters']['data_collection_name']
 
   return dc.delete_data_collection(pack_name, data_collection_name)
 
