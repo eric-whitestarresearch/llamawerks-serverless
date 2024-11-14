@@ -15,6 +15,7 @@
 
 from modules.datacollectiondocument import DataCollectionDocument
 from modules.database import Database
+from modules.apigwresponse import api_gw_response
 from json import loads
 import logging
 import modules.logger
@@ -56,6 +57,9 @@ def get_document_with_filter(event, context):
   logging.info("Starting get_document_with_filter")
   logging.debug(f"request event: {event}")
 
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
+
   dcd = DataCollectionDocument(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -81,6 +85,9 @@ def create_document(event, context):
   logging.info("Starting create_document")
   logging.debug(f"request event: {event}")
 
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
+
   dcd = DataCollectionDocument(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -103,6 +110,9 @@ def update_document_by_filter(event, context):
 
   logging.info("Starting update_document_by_filter")
   logging.debug(f"request event: {event}")
+
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
 
   dcd = DataCollectionDocument(Database())
 
@@ -151,6 +161,9 @@ def update_document_by_id(event, context):
   logging.info("Starting update_document_by_id")
   logging.debug(f"request event: {event}")
 
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
+  
   dcd = DataCollectionDocument(Database())
   
   pack_name = event['pathParameters']['pack_name']

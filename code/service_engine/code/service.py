@@ -15,6 +15,7 @@
 
 from modules.service import Service
 from modules.database import Database
+from modules.apigwresponse import api_gw_response
 from json import loads
 import logging
 import modules.logger
@@ -82,6 +83,9 @@ def create_service(event, context):
   logging.info("Starting create_service")
   logging.debug(f"request event: {event}")
 
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -103,6 +107,9 @@ def update_service(event, context):
   
   logging.info("Starting update_service")
   logging.debug(f"request event: {event}")
+
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
 
   service = Service(Database())
 

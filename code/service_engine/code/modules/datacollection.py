@@ -126,7 +126,9 @@ class DataCollection(ServiceComponent):
 
     update_result = self.update_serivce_component(pack_name, data_collection_definition)
 
-    self.manage_indexes(pack_name, data_collection_definition['name'], True)
+    #Only update index if there was a change
+    if update_result['statusCode'] == 202:
+      self.manage_indexes(pack_name, data_collection_definition['name'], True)
 
     return update_result
   

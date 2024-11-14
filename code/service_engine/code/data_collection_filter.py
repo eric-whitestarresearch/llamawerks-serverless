@@ -15,6 +15,7 @@
 
 from modules.datacollectionfilter import DataCollectionFilter
 from modules.database import Database
+from modules.apigwresponse import api_gw_response
 from json import loads
 import logging
 import modules.logger
@@ -63,6 +64,9 @@ def create_data_collection_filter(event, context):
   logging.info("Starting create_data_collection_filter")
   logging.debug(f"request event: {event}")
 
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
+
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -85,6 +89,9 @@ def update_data_collection_filter(event, context):
   
   logging.info("Starting update_data_collection_filter")
   logging.debug(f"request event: {event}")
+
+  if event['headers']['Content-Type'] != 'application/json':
+    return api_gw_response(415, "Content type must be application/json")
 
   dcf = DataCollectionFilter(Database())
 

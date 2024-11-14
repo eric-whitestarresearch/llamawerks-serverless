@@ -150,14 +150,14 @@ class ServiceComponent:
     """
     
     if pack_name != service_component_definition['pack']:
-      api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
+      return api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
 
     #Check to see if this service component already exists. If it does not, stop.
     filter = {'pack': pack_name, 'name': service_component_definition['name']}
     data_collection = self.db_client.find_one_in_collection(self.db_collection, filter)
 
     if not data_collection:
-      api_gw_response(404, f"The {self.component_type_name}  {service_component_definition['collection_name']} in pack {pack_name} does not exist. Use put method to create it")
+      return api_gw_response(404, f"The {self.component_type_name}  {service_component_definition['name']} in pack {pack_name} does not exist. Use put method to create it")
 
     update_count = self.db_client.update_document(self.db_collection, filter, service_component_definition)
 

@@ -22,7 +22,7 @@ import random
 import string
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection():
+def test_e2e_patch_data_collection():
   BASE_URL = environ.get('API_BASE_URL')
   dc_name = ''.join(random.choices(string.ascii_letters,k=10))
   pack_name = "blarf"
@@ -48,13 +48,42 @@ def test_e2e_put_data_collection():
 
   assert response.getcode() == 201 #Successfully created
 
+  body = {
+    "name": dc_name,
+    "pack": "blarf",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": True,
+        "index": True,
+        "unique": True
+      },
+      {
+        "name": "color",
+        "type": "string",
+        "required": True,
+        "index": False,
+        "unique": False
+      }
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PATCH')
+  req.add_header("Content-Type", "application/json")
+
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 202 #Successfully updated
+
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 200 #Deleted
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection_exists():
+def test_e2e_patch_data_collection_no_change():
   BASE_URL = environ.get('API_BASE_URL')
   dc_name = ''.join(random.choices(string.ascii_letters,k=10))
   pack_name = "blarf"
@@ -72,7 +101,7 @@ def test_e2e_put_data_collection_exists():
     ]
   }
  
-  data= dumps(body).encode("utf-8")
+  data= bytes(dumps(body).encode("utf-8"))
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
   req.add_header("Content-Type", "application/json")
 
@@ -80,23 +109,46 @@ def test_e2e_put_data_collection_exists():
 
   assert response.getcode() == 201 #Successfully created
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
+
   response = urllib.request.urlopen(req)
 
-  assert response.getcode() == 200 #Already exists
+  assert response.getcode() == 208 #No change
 
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
-  req.add_header("Content-Type", "application/json")
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 200 #Deleted
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection_bad_schema():
+def test_e2e_patch_data_collection_bad_schema():
   BASE_URL = environ.get('API_BASE_URL')
   dc_name = ''.join(random.choices(string.ascii_letters,k=10))
   pack_name = "blarf"
+  body = {
+    "name": dc_name,
+    "pack": "blarf",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": True,
+        "index": True,
+        "unique": True
+      }
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req.add_header("Content-Type", "application/json")
+
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 201 #Successfully created
+
   body = {
     "name2": dc_name,
     "pack": "blarf",
@@ -110,12 +162,11 @@ def test_e2e_put_data_collection_bad_schema():
       }
     ]
   }
- 
-  data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
-  req.add_header("Content-Type", "application/json")
 
   response = None
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PATCH')
+  req.add_header("Content-Type", "application/json")
 
   try:
     response = urllib.request.urlopen(req)
@@ -130,15 +181,58 @@ def test_e2e_put_data_collection_bad_schema():
   if response != None:
     assert False
 
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 200 #Deleted
+
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection_no_content_type():
+def test_e2e_patch_data_collection_not_exist():
+  BASE_URL = environ.get('API_BASE_URL')
+  dc_name = ''.join(random.choices(string.ascii_letters,k=10))
+  pack_name = "blarf"
+  body = {
+    "name": dc_name,
+    "pack": "blarf",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": True,
+        "index": True,
+        "unique": True
+      }
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PATCH')
+  req.add_header("Content-Type", "application/json")
+
+  response = None
+
+  try:
+    response = urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
+    if e.code == 404:
+      assert True #We expect this when the body does not match schema requirements
+    else:
+      #We got an error, but it is not a 404 as expected
+      assert False
+    
+  #If we have a response that means we got data back, which is not expected here
+  if response != None:
+    assert False
+
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_patch_data_collection_no_content_type():
   BASE_URL = environ.get('API_BASE_URL')
   dc_name = ''.join(random.choices(string.ascii_letters,k=10))
   pack_name = "blarf"
   body = ""
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PATCH')
 
   response = None
   
@@ -163,7 +257,7 @@ def test_e2e_put_data_collection_content_type_xml():
   body = ""
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PATCH')
   req.add_header("Content-Type", "application/xml")
 
   response = None
@@ -181,3 +275,40 @@ def test_e2e_put_data_collection_content_type_xml():
   if response != None:
     assert False
 
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_patch_data_collection_not_match():
+  BASE_URL = environ.get('API_BASE_URL')
+  dc_name = ''.join(random.choices(string.ascii_letters,k=10))
+  pack_name = "blarf"
+  body = {
+    "name": dc_name,
+    "pack": "blarf2",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": True,
+        "index": True,
+        "unique": True
+      }
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PATCH')
+  req.add_header("Content-Type", "application/json")
+
+  response = None
+
+  try:
+    response = urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
+    if e.code == 422:
+      assert True #We expect this when the pack names don't match
+    else:
+      #We got an error, but it is not a 422 as expected
+      assert False
+    
+  #If we have a response that means we got data back, which is not expected here
+  if response != None:
+    assert False
