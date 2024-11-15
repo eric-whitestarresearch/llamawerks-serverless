@@ -106,8 +106,12 @@ class DataCollection(ServiceComponent):
 
     dc_id = self.create_service_component(pack_name, data_collection_definition)
     body = loads(dc_id['body'])
-    body['indexes'] = self.manage_indexes(pack_name, data_collection_definition['name'])
     dc_id['body'] = dumps(body)
+
+    #Only update index if there was a change
+    if dc_id['statusCode'] in [200, 201]:
+      body['indexes'] = self.manage_indexes(pack_name, data_collection_definition['name'])
+    
 
     return dc_id
   
@@ -127,7 +131,7 @@ class DataCollection(ServiceComponent):
     update_result = self.update_serivce_component(pack_name, data_collection_definition)
 
     #Only update index if there was a change
-    if update_result['statusCode'] == 202:
+    if update_result['statusCode'] in [202, 208]:
       self.manage_indexes(pack_name, data_collection_definition['name'], True)
 
     return update_result

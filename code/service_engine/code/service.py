@@ -40,9 +40,9 @@ def get_services(event, context):
 
   pack_name = event['pathParameters']['pack_name']
   service_name = None
-  if event['queryStringParameters']:
-    if 'data_collection_name' in event['queryStringParameters']:
-      service_name = event['queryStringParameters']['service_name']    
+  
+  if event['queryStringParameters'] and 'service_name' in event['queryStringParameters']:
+    service_name = event['queryStringParameters']['service_name']    
   
   return service.get_services(pack_name, service_name)
   
@@ -83,7 +83,7 @@ def create_service(event, context):
   logging.info("Starting create_service")
   logging.debug(f"request event: {event}")
 
-  if event['headers']['Content-Type'] != 'application/json':
+  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
     return api_gw_response(415, "Content type must be application/json")
 
   service = Service(Database())
@@ -108,7 +108,7 @@ def update_service(event, context):
   logging.info("Starting update_service")
   logging.debug(f"request event: {event}")
 
-  if event['headers']['Content-Type'] != 'application/json':
+  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
     return api_gw_response(415, "Content type must be application/json")
 
   service = Service(Database())

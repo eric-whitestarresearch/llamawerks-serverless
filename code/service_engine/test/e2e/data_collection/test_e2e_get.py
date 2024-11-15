@@ -16,36 +16,121 @@
 import urllib.request
 from os import environ
 import pytest
+import random
+from json import dumps, loads
+import string
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_e2e_get_data_collection():
   BASE_URL = environ.get('API_BASE_URL')
-
+  dc_name = ''.join(random.choices(string.ascii_letters,k=10))
   pack_name = "blarf"
-  data_collection_name = "blarf"
-  
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={data_collection_name}")
+  body = {
+    "name": dc_name,
+    "pack": "blarf",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": True,
+        "index": True,
+        "unique": True
+      }
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req.add_header("Content-Type", "application/json")
+
   response = urllib.request.urlopen(req)
 
-  assert response.getcode() == 200
+  assert response.getcode() == 201 #Successfully created
+ 
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}")
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 200 #It exists
+
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 200 #Deleted
+
+  del_count = loads(response.read().decode('utf-8'))
+
+  assert del_count['deleted'] == 1 #data collection dilter was deleted
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_e2e_get_all_data_collection():
   BASE_URL = environ.get('API_BASE_URL')
-
+  dc_name = ''.join(random.choices(string.ascii_letters,k=10))
   pack_name = "blarf"
-  
+  body = {
+    "name": dc_name,
+    "pack": "blarf",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": True,
+        "index": True,
+        "unique": True
+      }
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req.add_header("Content-Type", "application/json")
+
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 201 #Successfully created #1
+
+  body['name'] = f"{dc_name}2"
+
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req.add_header("Content-Type", "application/json")
+
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 201 #Successfully created #2
+ 
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection")
   response = urllib.request.urlopen(req)
 
-  assert response.getcode() == 200
+  assert response.getcode() == 200 #It exists
+
+  dc_count = len(loads(response.read().decode('utf-8')))
+
+  assert dc_count >= 2 #We should have atleast the two data collection we created
+
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 200 #Deleted #1
+
+  del_count = loads(response.read().decode('utf-8'))
+
+  assert del_count['deleted'] == 1 #data collection was deleted
+
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}2", method='DELETE')
+  response = urllib.request.urlopen(req)
+
+  assert response.getcode() == 200 #Deleted #2
+
+  del_count = loads(response.read().decode('utf-8'))
+
+  assert del_count['deleted'] == 1 #data collection was deleted
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_e2e_get_data_collection_does_not_exist():
   BASE_URL = environ.get('API_BASE_URL')
 
   pack_name = "blarf"
-  data_collection_name = "poiuasdf123"
+  data_collection_name = ''.join(random.choices(string.ascii_letters,k=10))
   
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={data_collection_name}")
   response = None
@@ -62,11 +147,12 @@ def test_e2e_get_data_collection_does_not_exist():
   #If we have a response that means we got data back, which is not expected here
   if response != None:
     assert False
+
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_get_data_collection_none_in_pack():
   BASE_URL = environ.get('API_BASE_URL')
   
-  pack_name = "lkjhoiu"
+  pack_name = ''.join(random.choices(string.ascii_letters,k=10))
   
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection")
   response = urllib.request.urlopen(req)

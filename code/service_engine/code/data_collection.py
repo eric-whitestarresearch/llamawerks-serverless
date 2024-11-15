@@ -41,9 +41,9 @@ def get_data_collections(event, context):
   
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = None
-  if event['queryStringParameters']:
-    if 'data_collection_name' in event['queryStringParameters']:
-      data_collection_name = event['queryStringParameters']['data_collection_name']    
+
+  if event['queryStringParameters'] and 'data_collection_name' in event['queryStringParameters']:
+    data_collection_name = event['queryStringParameters']['data_collection_name']    
 
   return dc.get_data_collections(pack_name, data_collection_name)
   
@@ -85,7 +85,7 @@ def create_data_collection(event, context):
   logging.info("Starting create_data_collection")
   logging.debug(f"request event: {event}")
 
-  if event['headers']['Content-Type'] != 'application/json':
+  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
     return api_gw_response(415, "Content type must be application/json")
 
   dc = DataCollection(Database())
@@ -112,7 +112,7 @@ def update_data_collection(event, context):
   logging.info("Starting update_data_collection")
   logging.debug(f"request event: {event}")
 
-  if event['headers']['Content-Type'] != 'application/json':
+  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
     return api_gw_response(415, "Content type must be application/json")
 
   dc = DataCollection(Database())

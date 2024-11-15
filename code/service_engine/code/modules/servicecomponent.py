@@ -122,7 +122,7 @@ class ServiceComponent:
     """
     
     if pack_name != service_component_definition['pack']:
-      api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
+      return api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
     
     #Check to see if this data collection already exists. If it does, don't create it again.
     filter = {'pack': pack_name, 'name': service_component_definition['name']}

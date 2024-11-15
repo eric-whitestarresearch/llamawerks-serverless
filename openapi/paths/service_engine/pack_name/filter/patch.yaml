@@ -48,6 +48,6 @@ tags:
 x-amazon-apigateway-integration:
   uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_filter_update_data_collection_filter/invocations
   type: aws_proxy
-  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_filter_delete_data_collection_filter_role
+  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_filter_update_data_collection_filter_role
   httpMethod: POST
 x-amazon-apigateway-request-validator: all
