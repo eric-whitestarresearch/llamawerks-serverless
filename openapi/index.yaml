@@ -33,7 +33,19 @@ info:
   description: API for Llamawerks service engine
   version: "0.1.0"
 servers:
-  - url: "/api"
+  - url: https://{apiid}.execute-api.{region}.amazonaws.com/{env}
+    variables:
+      env:
+        description: Environment dev
+        default: dev
+        enum:
+          - dev
+      region:
+        description: The AWS region
+        default: us-east-1
+      apiid:
+        description: The API gteway id
+        default: abc123
 x-amazon-apigateway-request-validators: 
   all:
     validateRequestParameters : true

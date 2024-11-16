@@ -20,23 +20,23 @@ import pytest
 from json import dumps
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection(data_collection_single):
+def test_e2e_put_data_collection_filter(data_collection_filter_single):
   BASE_URL = environ.get('API_BASE_URL')
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_single['pack_name']}/data_collection?data_collection_name={data_collection_single['name']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_single['pack_name']}/filter?filter_name={data_collection_filter_single['name']}")
   response = urllib.request.urlopen(req)
 
-  assert response.getcode() == 200 #The fact that the dc exists means the fixture was able to call the put. If we get something else it mean the fixiture was unable to create
+  assert response.getcode() == 200 #The fact that the dcf exists means the fixture was able to call the put. If we get something else it mean the fixiture was unable to create
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection_bad_schema(data_collection_single):
+def test_e2e_put_data_collection_filter_bad_schema(data_collection_filter_single):
   BASE_URL = environ.get('API_BASE_URL')
   
-  malformed_body = data_collection_single['body']
+  malformed_body = data_collection_filter_single['body']
   del malformed_body['name']
  
   data= bytes(dumps(malformed_body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_single['pack_name']}/data_collection", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_single['pack_name']}/filter", data=data, method='PUT')
   req.add_header("Content-Type", "application/json")
 
   error_code = None
@@ -50,14 +50,13 @@ def test_e2e_put_data_collection_bad_schema(data_collection_single):
   assert error_code == 400
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection_no_content_type():
+def test_e2e_put_data_collection_filter_no_content_type():
   BASE_URL = environ.get('API_BASE_URL')
-  
   pack_name = "blarf"
   body = ""
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter", data=data, method='PUT')
 
   error_code = None
   
@@ -70,14 +69,13 @@ def test_e2e_put_data_collection_no_content_type():
   assert error_code == 415
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection_content_type_xml():
+def test_e2e_put_data_collection_filter_content_type_xml():
   BASE_URL = environ.get('API_BASE_URL')
-  
   pack_name = "blarf"
   body = ""
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter", data=data, method='PUT')
   req.add_header("Content-Type", "application/xml")
 
   error_code = None
@@ -91,11 +89,11 @@ def test_e2e_put_data_collection_content_type_xml():
   assert error_code == 415
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_data_collection_not_match(data_collection_single):
+def test_e2e_put_data_collection_filter_not_match(data_collection_filter_single):
   BASE_URL = environ.get('API_BASE_URL')
    
-  data= dumps(data_collection_single['body']).encode("utf-8")
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_single['pack_name']}qwe/data_collection", data=data, method='PUT')
+  data= dumps(data_collection_filter_single['body']).encode("utf-8")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_single['pack_name']}qwe/filter", data=data, method='PUT')
   req.add_header("Content-Type", "application/json")
 
   error_code = None

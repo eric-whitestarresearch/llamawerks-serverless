@@ -21,35 +21,35 @@ from json import loads
 import string
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_get_data_collection(data_collection_single):
+def test_e2e_get_data_collection_filter(data_collection_filter_single):
   BASE_URL = environ.get('API_BASE_URL')
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_single['pack_name']}/data_collection?data_collection_name={data_collection_single['name']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_single['pack_name']}/filter?filter_name={data_collection_filter_single['name']}")
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 200 #It exists
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_get_all_data_collection(data_collection_multi):
+def test_e2e_get_all_data_collection_filter(data_collection_filter_multi):
   BASE_URL = environ.get('API_BASE_URL')
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_multi[0]['pack_name']}/data_collection")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_multi[0]['pack_name']}/filter")
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 200 #It exists
 
   dc_count = len(loads(response.read().decode('utf-8')))
 
-  assert dc_count == len(data_collection_multi)
+  assert dc_count == len(data_collection_filter_multi) 
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_get_data_collection_does_not_exist():
+def test_e2e_get_data_collection_filter_does_not_exist():
   BASE_URL = environ.get('API_BASE_URL')
 
-  pack_name = "blarf"
-  data_collection_name = ''.join(random.choices(string.ascii_letters,k=10))
+  pack_name = 'blarf'
+  filter_name = ''.join(random.choices(string.ascii_letters,k=10))
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={data_collection_name}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter?filter_name={filter_name}")
   response = None
 
   try:
@@ -61,12 +61,12 @@ def test_e2e_get_data_collection_does_not_exist():
   assert response == None
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_get_data_collection_none_in_pack():
+def test_get_data_collection_filter_none_in_pack():
   BASE_URL = environ.get('API_BASE_URL')
   
   pack_name = ''.join(random.choices(string.ascii_letters,k=10))
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter")
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 204
