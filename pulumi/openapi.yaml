@@ -208,6 +208,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '[0-9a-f]{24}'
     collection_name_in_query:
       name: data_collection_name
       description: The name of the data collection to use

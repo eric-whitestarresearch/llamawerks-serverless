@@ -21,50 +21,49 @@ from json import loads
 import string
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_get_data_collection_filter(data_collection_filter_single):
+def test_e2e_get_document(document_single):
   BASE_URL = environ.get('API_BASE_URL')
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_single['pack_name']}/filter?filter_name={data_collection_filter_single['name']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['document_collection_name']}")
   response = urllib.request.urlopen(req)
 
-  assert response.getcode() == 200 #It exists
+  document_count = len(loads(response.read().decode('utf-8')))
+
+  assert response.getcode() == 200 and document_count == 1 #We should only get one document here
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_get_all_data_collection_filter(data_collection_filter_multi):
+def test_e2e_get_all_documents(document_multi):
   BASE_URL = environ.get('API_BASE_URL')
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_multi[0]['pack_name']}/filter")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_multi[0]['pack_name']}/data_collection/{document_multi[0]['document_collection_name']}")
   response = urllib.request.urlopen(req)
 
-  dc_count = len(loads(response.read().decode('utf-8')))
+  document_count = len(loads(response.read().decode('utf-8')))
 
-  assert response.getcode() == 200 and dc_count == len(data_collection_filter_multi) 
+  assert response.getcode() == 200 and document_count == len(document_multi)
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_get_data_collection_filter_does_not_exist():
+def test_e2e_get_document_data_collection_does_not_exist():
   BASE_URL = environ.get('API_BASE_URL')
 
-  pack_name = 'blarf'
-  filter_name = ''.join(random.choices(string.ascii_letters,k=10))
+  pack_name = "blarf"
+  data_collection_name = ''.join(random.choices(string.ascii_letters,k=10))
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter?filter_name={filter_name}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}")
   
   error_code = None
-
   try:
     response = urllib.request.urlopen(req)
   except urllib.error.HTTPError as e:
-    error_code = e.code 
-  
+    error_code =  e.code 
+
   assert error_code == 404 #Make sure we got a 404
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_get_data_collection_filter_none_in_pack():
+def test_get_data_collection_none_in_pack(empty_data_collection):
   BASE_URL = environ.get('API_BASE_URL')
   
-  pack_name = ''.join(random.choices(string.ascii_letters,k=10))
-  
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{empty_data_collection['pack_name']}/data_collection/{empty_data_collection['data_collection_name']}")
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 204

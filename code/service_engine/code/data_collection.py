@@ -16,6 +16,7 @@
 from modules.datacollection import DataCollection
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
+from modules.checkcontenttype import check_content_type
 from json import loads
 import logging
 import modules.logger
@@ -69,6 +70,7 @@ def delete_data_collection(event, context):
 
   return dc.delete_data_collection(pack_name, data_collection_name)
 
+@check_content_type
 def create_data_collection(event, context):
   """
   Creates a new data collection
@@ -85,9 +87,6 @@ def create_data_collection(event, context):
   logging.info("Starting create_data_collection")
   logging.debug(f"request event: {event}")
 
-  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
-    return api_gw_response(415, "Content type must be application/json")
-
   dc = DataCollection(Database())
   
   pack_name = event['pathParameters']['pack_name']
@@ -96,6 +95,7 @@ def create_data_collection(event, context):
 
   return dc.create_data_collection(pack_name,data_collection_definition)
 
+@check_content_type
 def update_data_collection(event, context):
   """
   Updates a data collection
@@ -111,9 +111,6 @@ def update_data_collection(event, context):
   
   logging.info("Starting update_data_collection")
   logging.debug(f"request event: {event}")
-
-  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
-    return api_gw_response(415, "Content type must be application/json")
 
   dc = DataCollection(Database())
 

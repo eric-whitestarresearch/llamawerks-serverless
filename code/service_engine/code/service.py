@@ -16,6 +16,7 @@
 from modules.service import Service
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
+from modules.checkcontenttype import check_content_type
 from json import loads
 import logging
 import modules.logger
@@ -68,6 +69,7 @@ def delete_service(event, context):
 
   return service.delete_service(pack_name, service_name)
 
+@check_content_type
 def create_service(event, context):
   """
   Creates a new service
@@ -83,9 +85,6 @@ def create_service(event, context):
   logging.info("Starting create_service")
   logging.debug(f"request event: {event}")
 
-  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
-    return api_gw_response(415, "Content type must be application/json")
-
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -93,6 +92,7 @@ def create_service(event, context):
 
   return service.create_service(pack_name,service_definition)
 
+@check_content_type
 def update_service(event, context):
   """
   Updates a service
@@ -107,9 +107,6 @@ def update_service(event, context):
   
   logging.info("Starting update_service")
   logging.debug(f"request event: {event}")
-
-  if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
-    return api_gw_response(415, "Content type must be application/json")
 
   service = Service(Database())
 

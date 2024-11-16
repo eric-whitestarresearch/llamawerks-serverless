@@ -36,11 +36,9 @@ def test_e2e_get_all_data_collection(data_collection_multi):
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_multi[0]['pack_name']}/data_collection")
   response = urllib.request.urlopen(req)
 
-  assert response.getcode() == 200 #It exists
-
   dc_count = len(loads(response.read().decode('utf-8')))
 
-  assert dc_count == len(data_collection_multi)
+  assert response.getcode() == 200  and dc_count == len(data_collection_multi)
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_e2e_get_data_collection_does_not_exist():
@@ -50,15 +48,15 @@ def test_e2e_get_data_collection_does_not_exist():
   data_collection_name = ''.join(random.choices(string.ascii_letters,k=10))
   
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={data_collection_name}")
-  response = None
+  
+  error_code = None
 
   try:
     response = urllib.request.urlopen(req)
   except urllib.error.HTTPError as e:
-    assert e.code == 404 #Make sure we got a 404
+      error_code = e.code 
 
-  #If we have a response that means we got data back, which is not expected here
-  assert response == None
+  assert error_code == 404 #Make sure we got a 404
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_get_data_collection_none_in_pack():
