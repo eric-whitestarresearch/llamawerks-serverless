@@ -89,7 +89,7 @@ def get_document_with_filter(event, context):
   data_collection_name = event['pathParameters']['data_collection_name']
   filter_name = event['queryStringParameters']['filter_name']   
   filter_variables = loads(event['body'])
-  project = event['pathParameters']['project']
+  project = event['queryStringParameters']['project'] if 'project' in event['queryStringParameters'] else False
 
   return dcd.get_document_with_filter(pack_name, data_collection_name, filter_name, filter_variables, project)
 

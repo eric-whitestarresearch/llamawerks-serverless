@@ -67,14 +67,14 @@ def document_single():
   }
 
   doc_data = bytes(dumps(doc_body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}", data=doc_data, method='PUT')
   req.add_header("Content-Type", "application/json")
 
   response = urllib.request.urlopen(req)
 
   doc_id = loads(response.read().decode('utf-8'))
 
-  yield {"document_collection_name": dc_name, "pack_name": pack_name, "doc_id": doc_id['id']}
+  yield {"data_collection_name": dc_name, "pack_name": pack_name, "doc_id": doc_id['id'], 'body': doc_body}
 
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}/id/{doc_id['id']}", method='DELETE')
   response = urllib.request.urlopen(req) #Delete the document
@@ -91,6 +91,11 @@ def document_multi():
   doc_bodies = [
     {
       "name": "Boone",
+      "color": "brown tabby",
+      "age": 7
+    },
+    {
+      "name": "Cheyenne",
       "color": "brown tabby",
       "age": 7
     },
@@ -145,7 +150,7 @@ def document_multi():
     response = urllib.request.urlopen(req)
     doc_id = loads(response.read().decode('utf-8'))
 
-    documents.append({"document_collection_name": dc_name, "pack_name": pack_name, "doc_id": doc_id['id'] })
+    documents.append({"data_collection_name": dc_name, "pack_name": pack_name, "doc_id": doc_id['id'], 'body': doc_body })
     
   yield documents
 
@@ -156,6 +161,77 @@ def document_multi():
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
   response = urllib.request.urlopen(req) #Delete the data collection
 
+@pytest.fixture
+def docuement_multi_with_filter(document_multi):
+  BASE_URL = environ.get('API_BASE_URL')
+  filter_name = ''.join(random.choices(string.ascii_letters,k=10))
+  pack_name = document_multi[0]['pack_name']
+  data_collection_name = document_multi[0]['data_collection_name']
+  body = {
+    "pack": pack_name,
+    "filter": {
+      "name": "#cat_name#"
+    },
+    "variables": [
+      {
+        "name": "cat_name",
+        "type": "string"
+      }
+    ],
+    "name": filter_name,
+    "data_collection": data_collection_name,
+    "project": [
+      "name",
+      "age"
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter", data=data, method='PUT')
+  req.add_header("Content-Type", "application/json")
+
+  response = urllib.request.urlopen(req)
+
+  yield {"filter_name": filter_name, "pack_name": pack_name, "data_collection_name": data_collection_name}
+
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter?filter_name={filter_name}", method='DELETE')
+  response = urllib.request.urlopen(req)
+
+@pytest.fixture
+def docuement_multi_with_filter_multi_match(document_multi):
+  BASE_URL = environ.get('API_BASE_URL')
+  filter_name = ''.join(random.choices(string.ascii_letters,k=10))
+  pack_name = document_multi[0]['pack_name']
+  data_collection_name = document_multi[0]['data_collection_name']
+  body = {
+    "pack": pack_name,
+    "filter": {
+      "age": "#age#"
+    },
+    "variables": [
+      {
+        "name": "age",
+        "type": "integer"
+      }
+    ],
+    "name": filter_name,
+    "data_collection": data_collection_name,
+    "project": [
+      "name",
+      "age"
+    ]
+  }
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter", data=data, method='PUT')
+  req.add_header("Content-Type", "application/json")
+
+  response = urllib.request.urlopen(req)
+
+  yield {"filter_name": filter_name, "pack_name": pack_name, "data_collection_name": data_collection_name}
+
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/filter?filter_name={filter_name}", method='DELETE')
+  response = urllib.request.urlopen(req)
 
 @pytest.fixture
 def empty_data_collection():

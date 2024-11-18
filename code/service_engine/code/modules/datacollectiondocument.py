@@ -21,8 +21,8 @@ from ast import literal_eval
 from bson.objectid import ObjectId
 from json import loads
 
-
-
+class FilterNotFoundExection(BaseException):
+  pass
 
 class DataCollectionDocument():
   """
@@ -122,7 +122,13 @@ class DataCollectionDocument():
     
     db_collection = f"{pack_name}.{data_collection_name}"
 
-    gen_filter_result = self.generate_db_filter_projection(pack_name, filter_name, filter_variables, gen_projection=project)
+    try:
+      gen_filter_result = self.generate_db_filter_projection(pack_name, filter_name, filter_variables, gen_projection=project)
+    except FilterNotFoundExection:
+      return api_gw_response(404, f"filter: {filter_name} not found in pack: {pack_name}")
+    except AssertionError:
+      return api_gw_response(400, f"variables in request do not match that of the filter definition")
+
     db_filter = gen_filter_result[0]
     db_projection = gen_filter_result[1]
     
@@ -152,13 +158,21 @@ class DataCollectionDocument():
     #If the filter is not found the request will abort with a 404
     result = self.dcf.get_data_collection_filters(pack_name,filter_name)
     
-    result_body = loads(result['body'])
+    if result['statusCode'] in [204, 404]:
+      raise FilterNotFoundExection(f"filter: {filter_name} not found in pack {pack_name}")
+    
+    result_body = loads(result['body'])[0]
 
     db_filter = result_body['filter']
     db_filter_string = str(db_filter)
     variables = result_body['variables']
+    
+    #Before substuting, make sure that list variables given matches what we need.
+    assert [i['name'] for i in variables] == list(filter_variables.keys())
+
     for var in variables:
-      db_filter_string = db_filter_string.replace(f"#{var['name']}#",filter_variables[var['name']])
+      string_to_replace = f"#{var['name']}#" if var['type'] == "string" else f"\'#{var['name']}#\'"
+      db_filter_string = db_filter_string.replace(string_to_replace, str(filter_variables[var['name']]))
     db_filter = literal_eval(db_filter_string)
     
     if not gen_projection:
@@ -209,7 +223,13 @@ class DataCollectionDocument():
     
     """
     
-    db_filter = (self.generate_db_filter_projection(pack_name, filter_name, filter_variables, gen_projection=False))[0]
+    try:
+      db_filter = (self.generate_db_filter_projection(pack_name, filter_name, filter_variables, gen_projection=False))[0]
+    except FilterNotFoundExection:
+      return api_gw_response(404, f"filter: {filter_name} not found in pack: {pack_name}")
+    except AssertionError:
+      return api_gw_response(400, f"variables in request do not match that of the filter definition")
+    
     db_collection = f"{pack_name}.{data_collection_name}"
 
     result = self.db_client.update_document(db_collection, db_filter, document_updates, upsert=False)

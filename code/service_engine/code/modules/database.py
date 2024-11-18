@@ -250,7 +250,7 @@ class Database:
     db_collection = db[collection]
 
     try:
-      result = db_collection.update_one(filter, { "$set": values_to_update}, upsert)  
+      result = db_collection.update_many(filter, { "$set": values_to_update}, upsert)  
     finally:
       self.return_db_connection(connection)
 
