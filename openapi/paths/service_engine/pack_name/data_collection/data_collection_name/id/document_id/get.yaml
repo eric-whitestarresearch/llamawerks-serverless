@@ -30,3 +30,4 @@ x-amazon-apigateway-integration:
   type: aws_proxy
   credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_get_document_by_id_role
   httpMethod: POST
+x-amazon-apigateway-request-validator: params-only

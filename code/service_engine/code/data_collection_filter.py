@@ -15,6 +15,11 @@
 
 from modules.datacollectionfilter import DataCollectionFilter
 from modules.database import Database
+from modules.apigwresponse import api_gw_response
+from modules.checkcontenttype import check_content_type
+from json import loads
+import logging
+import modules.logger
 
 def get_data_collection_filter(event,context):
   """
@@ -28,19 +33,21 @@ def get_data_collection_filter(event,context):
     Dict: Key: id value: the id of the new data collection
     Int: HTTP status code
   """
+
+  logging.info("Starting get_data_collection_filter")
+  logging.debug(f"request event: {event}")
   
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
   filter_name = None
-  if event['queryStringParameters']:
-    if 'data_collection_name' in event['queryStringParameters']:
-      data_collection_name = event['queryStringParameters']['filter_name']    
+  if event['queryStringParameters'] and 'filter_name' in event['queryStringParameters']:
+    filter_name = event['queryStringParameters']['filter_name']    
   
   return dcf.get_data_collection_filters(pack_name, filter_name)
 
 
-
+@check_content_type
 def create_data_collection_filter(event, context):
   """
   Creates a new data collection filter
@@ -53,13 +60,18 @@ def create_data_collection_filter(event, context):
     Dict: Key: id value: the id of the new data collection
     Int: HTTP status code
   """
+
+  logging.info("Starting create_data_collection_filter")
+  logging.debug(f"request event: {event}")
+
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_filter_definition = event['body']
+  data_collection_filter_definition = loads(event['body'])
 
   return dcf.create_data_collection_filter(pack_name,data_collection_filter_definition)
 
+@check_content_type
 def update_data_collection_filter(event, context):
   """
   Updates a data collection_filter
@@ -73,10 +85,13 @@ def update_data_collection_filter(event, context):
     Int: HTTP status code
   """
   
+  logging.info("Starting update_data_collection_filter")
+  logging.debug(f"request event: {event}")
+
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_filter_definition = event['body']
+  data_collection_filter_definition = loads(event['body'])
 
   return dcf.update_data_collection_filter(pack_name,data_collection_filter_definition)
 
@@ -93,9 +108,12 @@ def delete_data_collection_filter(event, context):
     Int: HTTP status code
   """
   
+  logging.info("Starting delete_data_collection_filter")
+  logging.debug(f"request event: {event}")
+
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  filter_name = event['pathParameters']['filter_name']
+  filter_name = event['queryStringParameters']['filter_name']
 
   return dcf.delete_data_collection_filter(pack_name, filter_name)

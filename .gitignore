@@ -163,9 +163,8 @@ cython_debug/
 
 Pulumi.dev.yaml
 
-#Don't check in the openapi artifacts so they will always have to be build.
+#Don't check in the openapi artifacts
 _build
-openapi.yaml
 openapi.json
 
 #This openapi spec isn't generated. So we do want to check it in.

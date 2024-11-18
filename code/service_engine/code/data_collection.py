@@ -15,6 +15,13 @@
 
 from modules.datacollection import DataCollection
 from modules.database import Database
+from modules.apigwresponse import api_gw_response
+from modules.checkcontenttype import check_content_type
+from json import loads
+import logging
+import modules.logger
+
+
 
 
 def get_data_collections(event, context):
@@ -28,14 +35,16 @@ def get_data_collections(event, context):
   Returns:
     Dict: A dictonary with the response data for API Gateway.
   """
-  
+  logging.info("Starting get_data_collections")
+  logging.debug(f"request event: {event}")
+
   dc = DataCollection(Database())
   
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = None
-  if event['queryStringParameters']:
-    if 'data_collection_name' in event['queryStringParameters']:
-      data_collection_name = event['queryStringParameters']['data_collection_name']    
+
+  if event['queryStringParameters'] and 'data_collection_name' in event['queryStringParameters']:
+    data_collection_name = event['queryStringParameters']['data_collection_name']    
 
   return dc.get_data_collections(pack_name, data_collection_name)
   
@@ -51,13 +60,17 @@ def delete_data_collection(event, context):
     Dict: A dictonary with the response data for API Gateway.
   """
   
+  logging.info("Starting delete_data_collection")
+  logging.debug(f"request event: {event}")
+
   dc = DataCollection(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_name = event['pathParameters']['data_collection_name']
+  data_collection_name = event['queryStringParameters']['data_collection_name']
 
   return dc.delete_data_collection(pack_name, data_collection_name)
 
+@check_content_type
 def create_data_collection(event, context):
   """
   Creates a new data collection
@@ -70,13 +83,19 @@ def create_data_collection(event, context):
     Dict: Key: id value: the id of the new data collection
     Int: HTTP status code
   """
-  dc = DataCollection(Database())
+  
+  logging.info("Starting create_data_collection")
+  logging.debug(f"request event: {event}")
 
+  dc = DataCollection(Database())
+  
   pack_name = event['pathParameters']['pack_name']
-  data_collection_definition = event['body']
+  data_collection_definition = loads(event['body'])
+  
 
   return dc.create_data_collection(pack_name,data_collection_definition)
 
+@check_content_type
 def update_data_collection(event, context):
   """
   Updates a data collection
@@ -90,9 +109,12 @@ def update_data_collection(event, context):
     Int: HTTP status code
   """
   
+  logging.info("Starting update_data_collection")
+  logging.debug(f"request event: {event}")
+
   dc = DataCollection(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_definition = event['body']
+  data_collection_definition = loads(event['body'])
 
   return dc.update_data_collection(pack_name,data_collection_definition)

@@ -14,6 +14,8 @@
 #      limitations under the License.
 
 from .servicecomponent import ServiceComponent
+from json import loads, dumps
+
 
 class DataCollection(ServiceComponent):
   """
@@ -103,7 +105,13 @@ class DataCollection(ServiceComponent):
     """
 
     dc_id = self.create_service_component(pack_name, data_collection_definition)
-    dc_id[0]['indexes'] = self.manage_indexes(pack_name, data_collection_definition['name'])
+    body = loads(dc_id['body'])
+    dc_id['body'] = dumps(body)
+
+    #Only update index if there was a change
+    if dc_id['statusCode'] in [200, 201]:
+      body['indexes'] = self.manage_indexes(pack_name, data_collection_definition['name'])
+    
 
     return dc_id
   
@@ -122,7 +130,9 @@ class DataCollection(ServiceComponent):
 
     update_result = self.update_serivce_component(pack_name, data_collection_definition)
 
-    self.manage_indexes(pack_name, data_collection_definition['name'], True)
+    #Only update index if there was a change
+    if update_result['statusCode'] in [202, 208]:
+      self.manage_indexes(pack_name, data_collection_definition['name'], True)
 
     return update_result
   
@@ -142,8 +152,8 @@ class DataCollection(ServiceComponent):
     #Index creation is idempotent. If it already exists, nothing will happen
     index_result = []
     db_collection_name = f"{pack_name}.{data_collection_name}"
-    dc_definition = self.get_data_collections(pack_name,data_collection_name)
-    for field in dc_definition[0][0]['fields']:
+    dc_definition = loads(self.get_data_collections(pack_name,data_collection_name)['body'])[0]
+    for field in dc_definition['fields']:
       if field['index']:
         index_result.append(self.db_client.create_index(db_collection_name, field['name'], field['unique']))
 

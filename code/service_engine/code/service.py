@@ -15,6 +15,11 @@
 
 from modules.service import Service
 from modules.database import Database
+from modules.apigwresponse import api_gw_response
+from modules.checkcontenttype import check_content_type
+from json import loads
+import logging
+import modules.logger
 
 
 def get_services(event, context):
@@ -29,13 +34,16 @@ def get_services(event, context):
     Dict: A dictonary with the response data for API Gateway.
   """
   
+  logging.info("Starting get_services")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
   service_name = None
-  if event['queryStringParameters']:
-    if 'data_collection_name' in event['queryStringParameters']:
-      service_name = event['queryStringParameters']['service_name']    
+  
+  if event['queryStringParameters'] and 'service_name' in event['queryStringParameters']:
+    service_name = event['queryStringParameters']['service_name']    
   
   return service.get_services(pack_name, service_name)
   
@@ -51,6 +59,9 @@ def delete_service(event, context):
     Dict: A dictonary with the response data for API Gateway.
   """
   
+  logging.info("Starting delete_service")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
@@ -58,6 +69,7 @@ def delete_service(event, context):
 
   return service.delete_service(pack_name, service_name)
 
+@check_content_type
 def create_service(event, context):
   """
   Creates a new service
@@ -69,13 +81,18 @@ def create_service(event, context):
   Returns:
     Dict: A dictonary with the response data for API Gateway.
   """
+
+  logging.info("Starting create_service")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  service_definition = event['body']
+  service_definition = loads(event['body'])
 
   return service.create_service(pack_name,service_definition)
 
+@check_content_type
 def update_service(event, context):
   """
   Updates a service
@@ -88,9 +105,12 @@ def update_service(event, context):
     Dict: A dictonary with the response data for API Gateway.
   """
   
+  logging.info("Starting update_service")
+  logging.debug(f"request event: {event}")
+
   service = Service(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  service_definition = event['body']
+  service_definition = loads(event['body'])
 
   return service.update_service(pack_name,service_definition)
