@@ -14,9 +14,11 @@
 #      limitations under the License.
 
 
+import psycopg2.sql as sql
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from bson import ObjectId, json_util
+import psycopg2
 import urllib.parse
 from jsonschema import validate, ValidationError
 import json
@@ -64,7 +66,7 @@ class Database:
       raise MissingAWSToken("The environment variable for AWS_SESSION_TOKEN is not set")
     
     logging.info("Getting DB Config")
-    req = urllib.request.Request('http://localhost:2773/systemsmanager/parameters/get?name=llamawerks_db_config&withDecryption=true')
+    req = urllib.request.Request('http://localhost:2773/systemsmanager/parameters/get?name=llamawerks_postgres&withDecryption=true')
     req.add_header('X-Aws-Parameters-Secrets-Token', aws_token)
     result = urllib.request.urlopen(req).read()
 
@@ -76,13 +78,13 @@ class Database:
     except ValidationError as e:
       raise DBConfigValidationError(f"The DB config is invalid\n" + str(e))
 
-    username = urllib.parse.quote_plus(db_config['username'])
-    password = urllib.parse.quote_plus(db_config['password'])
-  
-    logging.info(f"Connecting to db host: {db_config['host']} database: {db_config['database']} ")
-    self.connection =  MongoClient(f"mongodb://{username}:{password}@{db_config['host']}:{db_config['port']}")
-    self.database_name = db_config['database']
-
+    self.connection = psycopg2.connect(
+      database = db_config['database'],
+      host = db_config['host'],
+      user = db_config['username'],
+      password = db_config['password'],
+      port = db_config['port']
+    )
 
   def __del__(self):
     """
@@ -118,44 +120,83 @@ class Database:
         'host': {'type': 'string'},
         'port': {'type': 'integer'},
         'database': {'type': 'string'},
+        'schema': {'type': 'string'},
         'username': {'type': 'string'},
         'password': {'type': 'string'}
       },
-      'required': ['host', 'port', 'database', 'username', 'password']}
+      'required': ['host', 'port', 'database', 'schema', 'username', 'password']}
 
     validate(config, schema) #If we validate nothing happens, if we fail a ValidationError exception is thrown
 
     return None
-  
-  def get_db_connection(self) -> MongoClient:
+  def cursor_management(func):
     """
-    Get a connection from the database pool
+    Decorator to manage the cursor lifecycle
 
     Parameters:
-      self (Database): The object itself.
+      func(Function): The function that is decorated 
 
     Returns:
-      (MongoClient): A connection to the database
+      The return of the called function
     """
+    def wrapper(self, *args, **kwargs):
+      try:
+        cursor = self.connection.cursor()
+        return_value = func(self, *args, **kwargs, cursor=cursor)
+      finally:
+        cursor.close()
+      return return_value   
+    return wrapper
+  
+  def build_document_sql_query(self, collection, filter = None, projection = None):
+    """
+    Builds the SQL query used to search for documents
     
-    return self.connection
-  
-  def return_db_connection(self, connection):
-    """
-    Returns a DB connection to the pool
-
     Parameters:
-      self (Database): The object itself.
-      connection (MongoClient): A connection to the database
+      collection (String): The name of the table to query
+      filter (String) Optional: The JSONpath query to apply to the documents
+      projection (List(String)) Optional: A list of the keys to return from the document
 
-    Returns
-      None
+    Returns:
+      A SQL query object
     """
-    # The serverless version of the code doesn't use connection pooling. So this does nothing. 
-    # I'll probably refactor it out later. 
-    pass
+
+    if filter:
+      where_clause = sql.SQL("WHERE document @@ {filter}").format(filter = sql.Literal(filter))
+    else:
+      where_clause = sql.SQL("")
+
+    if projection:
+      key_projection=[]
+      for key in projection:
+        key_projection.append(sql.SQL(',').join([
+            sql.Literal(key),
+            sql.SQL('->>').join([
+              sql.Identifier('document'),
+              sql.Literal(key)])  
+        ]))
+
+      query = sql.SQL("""
+        SELECT jsonb_build_object('id', id, {keys_to_project})
+        FROM {table}
+        {where_clause}     
+      """).format(keys_to_project = sql.SQL(',').join(key_projection),
+                  table = sql.Identifier(collection),
+                  where_clause=where_clause)
+    else:
+      query = sql.SQL("""
+        SELECT jsonb_set(document, '{{id}}', to_jsonb(id)::jsonb)
+        FROM {table}
+        {where_clause}     
+        """).format(table=psycopg2.sql.Identifier(collection),
+                    where_clause=where_clause)
+      
+    logging.debug(f"document query: {query.as_string(self.connection)}")
+
+    return query
   
-  def find_all_in_collection(self, collection, filter, projection = {}):
+  @cursor_management
+  def find_in_collection(self, collection, filter = None, projection = None, find_many = False, cursor = None):
     """
     Find all documents in a collection
 
@@ -167,45 +208,18 @@ class Database:
     Returns:
       List: A list of all of the documents found
     """
+   
+    query = self.build_document_sql_query(collection, filter, projection)
+    cursor.execute(query)
 
-    connection = self.get_db_connection()
-    db = connection[self.database_name]
-    db_collection = db[collection]
-
-    try:
-      results = db_collection.find(filter, projection)  
-    finally:
-      self.return_db_connection(connection)
-
-    documents = (loads(dumps(results)))
-
-    return documents
-  
-  def find_one_in_collection(self, collection, filter):
-    """
-    Finds a document in a collection
-
-    Parameters:
-      self (Database): The object itself.
-      collection (String): The name of the collection to search in
-      filter (Dict): A dictonary containing the filter to search by 
-
-    Returns:
-      Dict: The found document
-    """
-
-    connection = self.get_db_connection()
-    db = connection[self.database_name]
-    db_collection = db[collection]
-
-    try:
-      result = db_collection.find_one(filter)  
-    finally:
-      self.return_db_connection(connection)
-
-    document = (loads(dumps(result)))
-
-    return document
+    if find_many:
+      return [row[0] for row in cursor.fetchall()]
+    else:
+      result = cursor.fetchone()
+      if result:
+        return result[0]
+      else:
+        return []
   
   def insert_document(self, collection, document):
     """
