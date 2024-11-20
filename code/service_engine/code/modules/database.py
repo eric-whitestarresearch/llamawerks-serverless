@@ -24,8 +24,7 @@ from jsonschema import validate, ValidationError
 import json
 import urllib.request
 import os
-from bson.json_util import dumps
-from json import loads
+from json import dumps, loads
 import logging
 
 class DBConfigValidationError(ValidationError):
@@ -221,28 +220,38 @@ class Database:
       else:
         return []
   
-  def insert_document(self, collection, document):
+  @cursor_management
+  def insert_document(self, table, document, cursor = None):
     """
     A function to insert a new doument
 
     Parameters:
       self (Database): The instantiation of the Database class
-      document (Dict): A dictonary with the document to inset into a collection
+      table (String): The table to insert the document into
+      document (Dict): A dictonary with the document to inset into a table
+      cursor (Cursor): A postgres cursor object. Created by the decorator
 
     Returns:
-      Str: A 24 character hexadecmal string that represents the id of the new object
+      Int: A integer that represents the id of the new document
     """
 
-    connection = self.get_db_connection()
-    db = connection[self.database_name]
-    db_collection = db[collection]
-
-    try:
-      result = db_collection.insert_one(document)
-    finally:
-      self.return_db_connection(connection)
+    insert_sql = sql.SQL("""
+        INSERT INTO {table}(document)
+        VALUES({document}) 
+        RETURNING id; 
+      """).format(table = sql.Identifier(table),
+                  document=sql.Literal(dumps(document)))
     
-    return str(result.inserted_id)
+    logging.debug(f"insert document sql: {insert_sql.as_string(self.connection)}")
+
+    cursor.execute(insert_sql)
+    new_row = cursor.fetchone()
+    self.connection.commit()
+
+    if new_row:
+      return new_row[0]
+    else:
+      return None
 
   def update_document(self, collection, filter, values_to_update, upsert=False):
     """
