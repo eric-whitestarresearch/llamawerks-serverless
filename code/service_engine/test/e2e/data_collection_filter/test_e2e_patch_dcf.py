@@ -165,4 +165,25 @@ def test_e2e_patch_data_collection_filter_not_match(data_collection_filter_singl
 
   assert error_code == 422 #Expect an unprocessable entity since the pack name in the URL and body don't match
 
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_patch_data_collection_filter_dirty_input(data_collection_filter_single):
+  BASE_URL = environ.get('API_BASE_URL')
+
+  body = data_collection_filter_single['body']
+  body['name'] = f"${body['name']}"
+  
+  data= dumps(body).encode("utf-8")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{data_collection_filter_single['pack_name']}/filter", data=data, method='PATCH')
+  req.add_header("Content-Type", "application/json")
+
+  error_code = None
+  
+  try:
+    response = urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
+    error_code = e.code 
+       
+  #We should get a unprocessable entity when the definition includes a charcter that could indicate an injection attack
+  assert error_code == 422
+
 

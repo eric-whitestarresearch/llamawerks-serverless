@@ -14,25 +14,27 @@
 #      limitations under the License.
 
 from .apigwresponse import api_gw_response
+import re
 
-def check_content_type(func):
-    """
-    Decorator to check if the content type is application/json otherwise return a 415
+def sanitize_body(func):
+  """
+  Decorator to sanitize the serivce component definition
 
-    Parameters:
-      func(Function): The function you want to execute
+  Parameters:
+    func(Function): The function you want to execute
 
-    Returns
-      The response of the function if the content type is correct, otherwise a HTTP 415
-    """
+  Returns
+    The response of the function input is clear, otherwise a HTTP 422
+  """
 
-    def wrapper(*args, **kwargs):
-      
-      event = kwargs['event'] if 'event' in kwargs else args[0]
-      
-      if not 'Content-Type' in event['headers'] or event['headers']['Content-Type'] != 'application/json':
-        return api_gw_response(415, "Content type must be application/json")
-      else:
-        return func(*args, **kwargs)
-      
-    return wrapper
+  def wrapper(*args, **kwargs):
+    
+    event = kwargs['event'] if 'event' in kwargs else args[0]
+    regex = '[$.()]'
+
+    if re.search(regex, event['body']):
+      return api_gw_response(422, "Definition invalid")
+    else:
+      return func(*args, **kwargs)
+    
+  return wrapper

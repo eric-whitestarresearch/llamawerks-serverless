@@ -57,7 +57,7 @@ class DataCollectionDocument():
 
   def check_data_collection_exists(func):
     """
-    Decator to check if a data collection exists, return a 404 if it does not
+    Decorator to check if a data collection exists, return a 404 if it does not
 
     Parameters:
       func(Function): The function you want to execute

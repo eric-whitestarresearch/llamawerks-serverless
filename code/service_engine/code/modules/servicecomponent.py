@@ -14,6 +14,7 @@
 #      limitations under the License.
 import json
 from .apigwresponse import api_gw_response
+import re
 
 class ServiceComponent:
   """
@@ -55,7 +56,7 @@ class ServiceComponent:
       Bool: True if exist, false if not
     
     """
-    db_filter = {"pack": pack_name, "name": service_component_name}
+    db_filter = {"pack": str(pack_name), "name": str(service_component_name)}
     service_items = [self.db_client.find_one_in_collection(self.db_collection,db_filter)]
     if service_items[0]:
       return True
@@ -76,11 +77,11 @@ class ServiceComponent:
     """
 
     if service_component_name:
-      db_filter = {"pack": pack_name, "name": service_component_name}
+      db_filter = {"pack": str(pack_name), "name": str(service_component_name)}
       if not self.service_component_exists(pack_name, service_component_name):
         return api_gw_response(404, f"Could not find {self.component_type_name} {service_component_name} in pack {pack_name}")
     else:
-      db_filter = {"pack": pack_name}
+      db_filter = {"pack": str(pack_name)}
       
     service_items = self.db_client.find_all_in_collection(self.db_collection,db_filter)
 
@@ -102,12 +103,11 @@ class ServiceComponent:
       Int: HTTP status code
     """
 
-    db_filter = {'pack' : pack_name, 'name': service_component_name}
+    db_filter = {'pack' : str(pack_name), 'name': str(service_component_name)}
     delete_count = self.db_client.delete_document(self.db_collection, db_filter)
 
     return api_gw_response(200, {"deleted" : delete_count})
   
-
   def create_service_component(self,pack_name,service_component_definition):
     """
     Creates a new service component
@@ -125,7 +125,7 @@ class ServiceComponent:
       return api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
     
     #Check to see if this data collection already exists. If it does, don't create it again.
-    filter = {'pack': pack_name, 'name': service_component_definition['name']}
+    filter = {'pack': str(pack_name), 'name': str(service_component_definition['name'])}
     data_collection = self.db_client.find_all_in_collection(self.db_collection, filter)
 
     if len(data_collection):
@@ -135,7 +135,7 @@ class ServiceComponent:
 
 
     return api_gw_response(201, { "id": new_service_component_id })
-  
+
   def update_serivce_component(self, pack_name, service_component_definition):
     """
     Updates a service component
@@ -153,7 +153,7 @@ class ServiceComponent:
       return api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
 
     #Check to see if this service component already exists. If it does not, stop.
-    filter = {'pack': pack_name, 'name': service_component_definition['name']}
+    filter = {'pack': str(pack_name), 'name': str(service_component_definition['name'])}
     data_collection = self.db_client.find_one_in_collection(self.db_collection, filter)
 
     if not data_collection:

@@ -79,8 +79,14 @@ class Database:
     username = urllib.parse.quote_plus(db_config['username'])
     password = urllib.parse.quote_plus(db_config['password'])
   
-    logging.info(f"Connecting to db host: {db_config['host']} database: {db_config['database']} ")
-    self.connection =  MongoClient(f"mongodb://{username}:{password}@{db_config['host']}:{db_config['port']}")
+    logging.info(f"Connecting to db host: {db_config['host']} protocol: {db_config['protocol']} database: {db_config['database']} ")
+    
+    if db_config['protocol'] == "mongodb+srv":
+      connection_string = f"{db_config['protocol']}://{username}:{password}@{db_config['host']}"
+    else:
+      connection_string = f"{db_config['protocol']}://{username}:{password}@{db_config['host']}:{db_config['port']}"
+    
+    self.connection =  MongoClient(connection_string,tls=db_config['tls'])
     self.database_name = db_config['database']
 
 
@@ -115,13 +121,15 @@ class Database:
       '$schema': 'http://json-schema.org/draft-04/schema#',
       'type': 'object',
       'properties': {
+        'protocol': {'type':'string'},
         'host': {'type': 'string'},
         'port': {'type': 'integer'},
+        'tls': {'type': 'boolean'},
         'database': {'type': 'string'},
         'username': {'type': 'string'},
         'password': {'type': 'string'}
       },
-      'required': ['host', 'port', 'database', 'username', 'password']}
+      'required': ['protocol', 'host', 'port', 'database', 'username', 'password']}
 
     validate(config, schema) #If we validate nothing happens, if we fail a ValidationError exception is thrown
 

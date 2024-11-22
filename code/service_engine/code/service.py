@@ -17,6 +17,7 @@ from modules.service import Service
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
+from modules.sanitizebody import sanitize_body
 from json import loads
 import logging
 import modules.logger
@@ -70,6 +71,7 @@ def delete_service(event, context):
   return service.delete_service(pack_name, service_name)
 
 @check_content_type
+@sanitize_body
 def create_service(event, context):
   """
   Creates a new service
@@ -93,6 +95,7 @@ def create_service(event, context):
   return service.create_service(pack_name,service_definition)
 
 @check_content_type
+@sanitize_body
 def update_service(event, context):
   """
   Updates a service

@@ -17,6 +17,7 @@ from modules.datacollectiondocument import DataCollectionDocument
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
+from modules.sanitizebody import sanitize_body
 import modules.logger
 from json import loads
 import logging
@@ -24,7 +25,7 @@ import re
 
 def validate_doc_id(func):
   """
-  Decator to check if the document ID is valid
+  Decorator to check if the document ID is valid
 
   Parameters:
     func(Function): The function you want to execute
@@ -68,6 +69,7 @@ def get_documents(event, context):
   return dcd.get_documents(pack_name, data_collection_name)
 
 @check_content_type
+@sanitize_body
 def get_document_with_filter(event, context):
   """
   Reurns documents matching a filter
@@ -94,6 +96,7 @@ def get_document_with_filter(event, context):
   return dcd.get_document_with_filter(pack_name, data_collection_name, filter_name, filter_variables, project)
 
 @check_content_type
+@sanitize_body
 def create_document(event, context):
   """
   Create a new document
@@ -118,6 +121,7 @@ def create_document(event, context):
   return dcd.create_document(pack_name, data_collection_name, document)
 
 @check_content_type
+@sanitize_body
 def update_document_by_filter(event, context):
   """
   Updates a document(s) matching a filter
@@ -168,6 +172,7 @@ def get_document_by_id(event, context):
 
 @check_content_type
 @validate_doc_id
+@sanitize_body
 def update_document_by_id(event, context):
   """
   Updates a document matching the id

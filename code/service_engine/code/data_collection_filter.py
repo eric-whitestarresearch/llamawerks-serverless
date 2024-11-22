@@ -17,6 +17,7 @@ from modules.datacollectionfilter import DataCollectionFilter
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
+from modules.sanitizebody import sanitize_body
 from json import loads
 import logging
 import modules.logger
@@ -48,6 +49,7 @@ def get_data_collection_filter(event,context):
 
 
 @check_content_type
+@sanitize_body
 def create_data_collection_filter(event, context):
   """
   Creates a new data collection filter
@@ -72,6 +74,7 @@ def create_data_collection_filter(event, context):
   return dcf.create_data_collection_filter(pack_name,data_collection_filter_definition)
 
 @check_content_type
+@sanitize_body
 def update_data_collection_filter(event, context):
   """
   Updates a data collection_filter
