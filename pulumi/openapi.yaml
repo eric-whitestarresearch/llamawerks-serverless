@@ -36,6 +36,11 @@ servers:
       apiid:
         description: The API gteway id
         default: abc123
+  - url: 'https://api.{env}.llamawerks.net'
+    variables:
+      env:
+        description: Environment dev
+        default: dev
 x-amazon-apigateway-request-validators:
   all:
     validateRequestParameters: true
@@ -376,6 +381,38 @@ paths:
         credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_delete_data_collection_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Data Collection
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
   '/service_engine/{pack_name}/filter':
     get:
       operationId: data_collection_filter.get_data_collection_filter
@@ -493,6 +530,38 @@ paths:
         credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_filter_delete_data_collection_filter_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Data Collection Filter
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
   '/service_engine/{pack_name}/data_collection/{data_collection_name}':
     get:
       operationId: document.get_documents
@@ -613,6 +682,38 @@ paths:
         credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_update_document_by_filter_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Documents
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
   '/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{document_id}':
     get:
       operationId: document.get_document_by_id
@@ -692,6 +793,38 @@ paths:
         credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_delete_document_by_id_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Documents
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
   '/service_engine/{pack_name}/service/':
     get:
       operationId: service.get_services
@@ -809,3 +942,35 @@ paths:
         credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_delete_service_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Service
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''

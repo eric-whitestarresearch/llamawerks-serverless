@@ -46,6 +46,11 @@ servers:
       apiid:
         description: The API gteway id
         default: abc123
+  - url: https://api.{env}.llamawerks.net
+    variables:
+      env:
+        description: Environment dev
+        default: dev
 x-amazon-apigateway-request-validators: 
   all:
     validateRequestParameters : true
