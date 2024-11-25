@@ -14,9 +14,11 @@
 #      limitations under the License.
 
 from .apigwresponse import api_gw_response
+from json import loads
+from json.decoder import JSONDecodeError
 import re
 
-def sanitize_body(func):
+def prepare_body(func):
   """
   Decorator to sanitize the serivce component definition
 
@@ -30,11 +32,16 @@ def sanitize_body(func):
   def wrapper(*args, **kwargs):
     
     event = kwargs['event'] if 'event' in kwargs else args[0]
+    context = kwargs['context'] if 'context' in kwargs else args[1]
     regex = '[$.()]'
 
     if re.search(regex, event['body']):
       return api_gw_response(422, "Definition invalid")
     else:
-      return func(*args, **kwargs)
+      try:
+        event['body'] = loads(event['body'])
+      except JSONDecodeError:
+        return api_gw_response(400, "Invalid JSON in request body")
+      return func(event=event, context=context)
     
   return wrapper

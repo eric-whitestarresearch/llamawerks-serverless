@@ -17,9 +17,10 @@ from modules.datacollectiondocument import DataCollectionDocument
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
-from modules.sanitizebody import sanitize_body
+from modules.preparebody import prepare_body
 import modules.logger
 from json import loads
+from json.decoder import JSONDecodeError
 import logging
 import re
 
@@ -69,7 +70,7 @@ def get_documents(event, context):
   return dcd.get_documents(pack_name, data_collection_name)
 
 @check_content_type
-@sanitize_body
+@prepare_body
 def get_document_with_filter(event, context):
   """
   Reurns documents matching a filter
@@ -90,13 +91,13 @@ def get_document_with_filter(event, context):
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
   filter_name = event['queryStringParameters']['filter_name']   
-  filter_variables = loads(event['body'])
   project = event['queryStringParameters']['project'] if 'project' in event['queryStringParameters'] else False
+  filter_variables = event['body']
 
   return dcd.get_document_with_filter(pack_name, data_collection_name, filter_name, filter_variables, project)
 
 @check_content_type
-@sanitize_body
+@prepare_body
 def create_document(event, context):
   """
   Create a new document
@@ -116,12 +117,12 @@ def create_document(event, context):
 
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
-  document = loads(event['body'])
+  document = event['body']
 
   return dcd.create_document(pack_name, data_collection_name, document)
 
 @check_content_type
-@sanitize_body
+@prepare_body
 def update_document_by_filter(event, context):
   """
   Updates a document(s) matching a filter
@@ -142,7 +143,7 @@ def update_document_by_filter(event, context):
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
   filter_name = event['queryStringParameters']['filter_name']
-  document_and_vars = loads(event['body'])
+  document_and_vars = event['body']
 
   return dcd.update_document(pack_name, data_collection_name, filter_name, document_and_vars['variables'], document_and_vars['document'])
 
@@ -172,7 +173,7 @@ def get_document_by_id(event, context):
 
 @check_content_type
 @validate_doc_id
-@sanitize_body
+@prepare_body
 def update_document_by_id(event, context):
   """
   Updates a document matching the id
@@ -193,7 +194,7 @@ def update_document_by_id(event, context):
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
   document_id = event['pathParameters']['document_id']
-  document = loads(event['body'])
+  document = event['body']
 
   return dcd.update_document_by_id(pack_name, data_collection_name, document_id, document['document'])
 

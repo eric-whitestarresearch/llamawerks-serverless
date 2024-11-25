@@ -157,7 +157,7 @@ def test_e2e_put_document_by_id_content_type_xml():
   assert error_code == 415 #Expect a media type not supported
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
-def test_e2e_put_document_by_id_dirty_input():
+def test_e2e_patch_document_by_id_dirty_input():
   BASE_URL = environ.get('API_BASE_URL')
 
   doc_id = token_hex(12)
@@ -178,5 +178,28 @@ def test_e2e_put_document_by_id_dirty_input():
        
   #We should get a unprocessable entity when the definition includes a charcter that could indicate an injection attack
   assert error_code == 422
+
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_patch_document_by_id_invalid_json():
+  BASE_URL = environ.get('API_BASE_URL')
+  pack_name = ''.join(random.choices(string.ascii_letters,k=10))
+  data_collection_name = ''.join(random.choices(string.ascii_letters,k=10))
+  doc_id = token_hex(12)
+
+  body = '{"a"}'
+  
+  data= body.encode("utf-8")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{doc_id}", data=data, method='PATCH')
+  req.add_header("Content-Type", "application/json")
+
+  error_code = None
+  
+  try:
+    response = urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
+    error_code = e.code 
+       
+  #We should get an error when the definition includes invalid json
+  assert error_code == 400
 
 

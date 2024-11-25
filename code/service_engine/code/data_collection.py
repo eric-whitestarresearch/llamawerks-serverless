@@ -17,8 +17,9 @@ from modules.datacollection import DataCollection
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
-from modules.sanitizebody import sanitize_body
+from modules.preparebody import prepare_body
 from json import loads
+from json.decoder import JSONDecodeError
 import logging
 import modules.logger
 
@@ -72,7 +73,7 @@ def delete_data_collection(event, context):
   return dc.delete_data_collection(pack_name, data_collection_name)
 
 @check_content_type
-@sanitize_body
+@prepare_body
 def create_data_collection(event, context):
   """
   Creates a new data collection
@@ -92,13 +93,12 @@ def create_data_collection(event, context):
   dc = DataCollection(Database())
   
   pack_name = event['pathParameters']['pack_name']
-  data_collection_definition = loads(event['body'])
+  data_collection_definition = event['body']
   
-
   return dc.create_data_collection(pack_name,data_collection_definition)
 
 @check_content_type
-@sanitize_body
+@prepare_body
 def update_data_collection(event, context):
   """
   Updates a data collection
@@ -118,6 +118,6 @@ def update_data_collection(event, context):
   dc = DataCollection(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_definition = loads(event['body'])
+  data_collection_definition = event['body']
 
   return dc.update_data_collection(pack_name,data_collection_definition)
