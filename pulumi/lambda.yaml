@@ -84,4 +84,19 @@ lambdas:
     name: service_render_service_field
     package_checksum_location: ../code/service_engine/package.sum
     package_location: ../code/service_engine/package.zip
-
+  - handler: service.execute_service
+    name: service_execute_service
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: service_execution.update_service_execution
+    name: service_execution_update_service_execution
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: service_execution.get_service_execution
+    name: service_execution_get_service_execution
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip
+  - handler: service_execution.delete_service_execution
+    name: service_execution_delete_service_execution
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip

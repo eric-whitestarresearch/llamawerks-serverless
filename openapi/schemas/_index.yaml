@@ -27,3 +27,5 @@ dataCollectionFilter:
   $ref: "./dataCollectionFilter.yaml"
 service:
   $ref: "./service.yaml"
+serviceExecution:
+  $ref: "./serviceExecution.yaml"

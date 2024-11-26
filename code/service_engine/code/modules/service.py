@@ -15,6 +15,7 @@
 
 from .servicecomponent import ServiceComponent
 from .datacollectiondocument import DataCollectionDocument
+from .serviceexecution import ServiceExecution
 from .apigwresponse import api_gw_response
 
 class Service(ServiceComponent):
@@ -105,14 +106,14 @@ class Service(ServiceComponent):
   
   def render_service(self, pack_name, service_name):
     """
-    Retrieve the service definition from the database
+    Retrieve the data for all fields used in a service
 
     Parameters:
       pack_name (String): The name of the pack the service(s) is in
       service_name (String): The name of the service (Optional)
 
     Returns:
-      List: A list of dictonaries that contain the service definition(s)
+      List: A list of dictonaries containing the field used in the service
       Int: HTTP status code
     """
 
@@ -161,14 +162,14 @@ class Service(ServiceComponent):
   
   def render_service_field(self, pack_name, service_name, field_name, variables):
     """
-    Retrieve the service definition from the database
+    Retreive the data for a field used in a service
 
     Parameters:
       pack_name (String): The name of the pack the service(s) is in
       service_name (String): The name of the service (Optional)
 
     Returns:
-      List: A list of dictonaries that contain the service definition(s)
+      List: A list of dictonaries containing the field used in the service
       Int: HTTP status code
     """
 
@@ -212,3 +213,36 @@ class Service(ServiceComponent):
     
     return api_gw_response(200, field_docs['body'])
   
+  def execute_service(self, pack_name, service_name, service_vars):
+    """
+    Retreive the data for a field used in a service
+
+    Parameters:
+      pack_name (String): The name of the pack the service(s) is in
+      service_name (String): The name of the service (Optional)
+      servies_vars (Dict): A dictonary of the variables for the service
+
+    Returns:
+      List: A list of dictonaries containing the field used in the service
+      Int: HTTP status code
+    """
+
+    service_definition = self.get_service_component(pack_name, service_name, encode=False)
+    
+    try:
+      assert service_definition['statusCode'] == 200
+    except AssertionError:
+      if service_definition['statusCode'] == 404:
+        return service_definition #We got a 404 back so just return it up
+      else:
+        return api_gw_response(400, "Could not execute service")
+      
+    try:
+      assert set(service_vars.keys()) == {i['name'] for i in service_definition['body'][0]['fields']}
+    except AssertionError:
+      return api_gw_response(400, "Variables in the execution request did not match those in the serivce definition")
+    
+    se = ServiceExecution(self.db_client)
+
+    return se.submit_service_execution(pack_name, service_name, service_vars)
+    
