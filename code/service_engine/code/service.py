@@ -118,3 +118,50 @@ def update_service(event, context):
   service_definition = event['body']
 
   return service.update_service(pack_name,service_definition)
+
+def render_service(event, context):
+  """
+  Reurns the definition of the service(s)
+
+  Parameters:
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
+
+  Returns:
+    Dict: A dictonary with the response data for API Gateway.
+  """
+  
+  logging.info("Starting get_services")
+  logging.debug(f"request event: {event}")
+
+  service = Service(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  service_name = event['pathParameters']['service_name']
+  
+  return service.render_service(pack_name, service_name)
+@check_content_type
+@prepare_body
+def render_service_field(event, context):
+  """
+  Reurns the definition of the service(s)
+
+  Parameters:
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
+
+  Returns:
+    Dict: A dictonary with the response data for API Gateway.
+  """
+  
+  logging.info("Starting get_services")
+  logging.debug(f"request event: {event}")
+
+  service = Service(Database())
+
+  pack_name = event['pathParameters']['pack_name']
+  service_name = event['pathParameters']['service_name']
+  field_name = event['pathParameters']['field_name']
+  filter_vars = event['body']
+
+  return service.render_service_field(pack_name, service_name, field_name,filter_vars)

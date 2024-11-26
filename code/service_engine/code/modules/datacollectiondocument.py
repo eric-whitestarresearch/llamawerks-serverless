@@ -69,7 +69,7 @@ class DataCollectionDocument():
     def wrapper(*args, **kwargs):
       
       self = kwargs['self'] if 'self' in kwargs else args[0]
-      pack_name =   kwargs['self'] if 'pack_name' in kwargs else args[1]
+      pack_name =   kwargs['pack_name'] if 'pack_name' in kwargs else args[1]
       data_collection_name =   kwargs['data_collection_name'] if 'pack_name' in kwargs else args[2]
 
       if not self.dc.data_collection_exist(pack_name,data_collection_name):
@@ -103,7 +103,7 @@ class DataCollectionDocument():
       return api_gw_response(204, documents)
   
   @check_data_collection_exists
-  def get_document_with_filter(self, pack_name, data_collection_name, filter_name, filter_variables, project):
+  def get_document_with_filter(self, pack_name, data_collection_name, filter_name, filter_variables, project, encode=True):
     """
     Returns documents that match a data collection filter
 
@@ -113,6 +113,8 @@ class DataCollectionDocument():
       filter_name (Str): The name of the data collection filter
       filter_vriables (Dict): A dictonary containing the values for the variables used by the filter.
                               Key is the name of the variable. Value is the value fo the variable
+      project (Boolean): Return all fields or only fields defined in filter projection
+      encode (Boolean): Should response body be encoded as string for return to API Gateway
 
     Returns
       Dict: A dictonary containing the documents
@@ -135,7 +137,7 @@ class DataCollectionDocument():
     documents = self.db_client.find_all_in_collection(db_collection,db_filter, db_projection)
 
     if len(documents) > 0:
-      return api_gw_response(200, documents)
+      return api_gw_response(200, documents, encode=encode)
     else:
       return api_gw_response(204, documents)
   

@@ -13,9 +13,7 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-get:
-  $ref: "./get.yaml"
-# put:
-#   $ref: "./put.yaml"
+post:
+  $ref: "./post.yaml"
 options:
   $ref: "./options.yaml"

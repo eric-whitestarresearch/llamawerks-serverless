@@ -1,28 +1,25 @@
-from data_collection import create_data_collection
+from service import render_service, render_service_field
+from json import dumps
 
-body = """
- {
-    "name": "narf",
-    "pack": "narf",
-    "fields": [
-      {
-        "name": "$ne.name",
-        "type": "string",
-        "required": true,
-        "index": true,
-        "unique": true
-      }
-    ]
-  }
-
-"""
 event = {
- 'pathParameters':{'pack_name':'narf'},
+ 'pathParameters':{'pack_name':'blarf','service_name':'feed_cat'},
  'queryStringParameters':{},
- 'body': body,
+ 'body': {},
  'headers' : {'Content-Type':'application/json'}
 }
 context ={}
 
-result = create_data_collection(event=event,context=context)
+result = render_service(event=event,context=context)
+print(result)
+
+#Render a field from a service
+event = {
+ 'pathParameters':{'pack_name':'blarf','service_name':'feed_cat', 'field_name':'cat_info'},
+ 'queryStringParameters':{},
+ 'body': dumps({'cat_name':'Boone'}),
+ 'headers' : {'Content-Type':'application/json'}
+}
+context ={}
+
+result = render_service_field(event=event,context=context)
 print(result)

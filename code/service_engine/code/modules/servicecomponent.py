@@ -63,13 +63,14 @@ class ServiceComponent:
     else:
       return False
 
-  def get_service_component(self, pack_name, service_component_name = None):
+  def get_service_component(self, pack_name, service_component_name = None, encode = True):
     """
     Retrieve the service component from the database
 
     Parameters:
       pack_name (String): The name of the pack the service item is in
       service_component_name (String): The name of the service component (Optional)
+      encode (Boolean): Should the body in the return be dumped to a text string
 
     Returns:
       List: A list of dictonaries that contain the service component definition(s)
@@ -88,7 +89,7 @@ class ServiceComponent:
     if not len(service_items):
       return api_gw_response(204, service_items)  #The pack has no service items
     else: 
-      return api_gw_response(200, service_items)
+      return api_gw_response(200, service_items, encode=encode)
     
   def delete_service_component(self, pack_name, service_component_name):
     """

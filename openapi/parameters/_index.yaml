@@ -17,6 +17,8 @@ pack_name:
   $ref: "./required/path/pack_name.yaml"
 service_name:
   $ref: "./required/path/service_name.yaml"
+field_name:
+  $ref: "./required/path/field_name.yaml"
 data_collection_name:
   $ref: "./required/path/data_collection_name.yaml"
 document_id:

@@ -13,9 +13,9 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-get:
-  $ref: "./get.yaml"
-# put:
-#   $ref: "./put.yaml"
-options:
-  $ref: "./options.yaml"
+name: field_name
+description: The name of the field in the service to render
+in: path
+required: True
+schema:
+  type: string

@@ -1,0 +1,25 @@
+{
+  "name": "cats",
+  "pack": "blarf",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "index": true,
+      "unique": true
+    },{
+      "name": "age",
+      "type": "integer",
+      "required": true,
+      "index": false,
+      "unique": false
+    },{
+      "name": "fed_today",
+      "type": "boolean",
+      "required": true,
+      "index": false,
+      "unique": false
+    }
+  ]
+}

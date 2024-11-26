@@ -1,0 +1,30 @@
+[
+  {
+    "name": "has_not_been_fed",
+    "pack": "blarf",
+    "data_collection": "cats",
+    "filter": {"fed_today":false},
+    "project": [
+      "name"
+    ],
+    "variables": []
+  },
+  {
+    "name": "cat_name",
+    "pack": "blarf",
+    "data_collection": "cats",
+    "filter": {"name":"cat_name"},
+    "project": [
+      "name",
+      "age"
+    ],
+    "variables": [
+      {
+        "name": "cat_name",
+        "type": "string"
+      }
+    ]
+  }
+
+
+]

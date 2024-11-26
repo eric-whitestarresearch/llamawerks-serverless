@@ -178,12 +178,55 @@ components:
     service:
       type: object
       properties:
-        document:
-          type: object
+        name:
+          type: string
+          description: The name of the service
+        pack:
+          type: string
+          description: THe pack this service belongs to
+        fields:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of this field
+              display_name:
+                type: string
+                description: The name that should be presented to the user
+              wait_to_render:
+                type: boolean
+                description: Should the values be included at the time of the serivce render
+              filter:
+                type: string
+                description: The name of the data collection filter used to generate this choice
+              data_collection:
+                type: string
+                description: The name of the data collection to execute the filter against
+              display_type:
+                type: string
+                description: The type of element displayed to the use
+                enum:
+                  - drop_down
+                  - text
+                  - grid
+                  - check_box
+                  - radio_button
+              selection_key:
+                type: string
+                description: The key in the returned data used for the user selection
+            required:
+              - name
+              - display_name
+              - wait_to_render
+              - filter
+              - data_collection
+              - display_type
       required:
         - pack
         - name
-        - parameter
+        - fields
   parameters:
     pack_name:
       name: pack_name
@@ -195,6 +238,13 @@ components:
     service_name:
       name: service_name
       description: The name of the service
+      in: path
+      required: true
+      schema:
+        type: string
+    field_name:
+      name: field_name
+      description: The name of the field in the service to render
       in: path
       required: true
       schema:
@@ -942,6 +992,121 @@ paths:
         credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_delete_service_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Service
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  '/service_engine/{pack_name}/service/{service_name}':
+    get:
+      operationId: service.render_service
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+        - $ref: '#/components/parameters/service_name'
+      responses:
+        '200':
+          description: Returns a render of the service
+        '400':
+          description: Could not render the service
+        '404':
+          description: The specified data collection or data collection filter specified in the service does not exist in the pack
+      tags:
+        - Service
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_service_render_service/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_render_service_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Service
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  '/service_engine/{pack_name}/service/{service_name}/field/{field_name}':
+    post:
+      operationId: document.get_document_with_filter
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+        - $ref: '#/components/parameters/service_name'
+        - $ref: '#/components/parameters/field_name'
+      requestBody:
+        x-body-name: filter_variables
+        description: Variables for the filter
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Get all of the data collections
+        '204':
+          description: There are no documents in the data collection that match the filter
+        '404':
+          description: The specified data collection or filter does not exist in the pack
+      tags:
+        - Documents
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_service_render_service_field/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_render_service_field_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
     options:
       summary: CORS support
       description: |
