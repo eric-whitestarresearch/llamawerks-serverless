@@ -25,17 +25,17 @@ from json import dumps, loads
 # result = render_service_field(event=event,context=context)
 # print(result)
 
-#Render a field from a service
-# event = {
-#  'pathParameters':{'pack_name':'blarf','service_name':'feed_cat', 'field_name':'cat_info'},
-#  'queryStringParameters':{},
-#  'body': dumps({'cat_name':'Boone','cat_info':{'name':"Boone","age":7}}),
-#  'headers' : {'Content-Type':'application/json'}
-# }
-# context ={}
 
-# result = execute_service(event=event,context=context)
-# print(result)
+event = {
+ 'pathParameters':{'pack_name':'blarf','service_name':'feed_cat', 'field_name':'cat_info'},
+ 'queryStringParameters':{},
+ 'body': dumps({'cat_name':'Boone','cat_info':{'name':"Boone","age":7}}),
+ 'headers' : {'Content-Type':'application/json'}
+}
+context ={}
+
+result = execute_service(event=event,context=context)
+print(result)
 
 # service_execution_id = loads(result['body'])['id']
 # body = {
