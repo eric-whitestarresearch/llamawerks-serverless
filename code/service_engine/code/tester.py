@@ -1,5 +1,5 @@
 from service import render_service, render_service_field, execute_service
-from service_execution import update_service_execution, get_service_execution
+from service_execution import update_service_execution, get_service_execution, search_service_execution
 from json import dumps, loads
 
 # event = {
@@ -26,16 +26,16 @@ from json import dumps, loads
 # print(result)
 
 
-event = {
- 'pathParameters':{'pack_name':'blarf','service_name':'feed_cat', 'field_name':'cat_info'},
- 'queryStringParameters':{},
- 'body': dumps({'cat_name':'Boone','cat_info':{'name':"Boone","age":7}}),
- 'headers' : {'Content-Type':'application/json'}
-}
-context ={}
+# event = {
+#  'pathParameters':{'pack_name':'blarf','service_name':'feed_cat', 'field_name':'cat_info'},
+#  'queryStringParameters':{},
+#  'body': dumps({'cat_name':'Boone','cat_info':{'name':"Boone","age":7}}),
+#  'headers' : {'Content-Type':'application/json'}
+# }
+# context ={}
 
-result = execute_service(event=event,context=context)
-print(result)
+# result = execute_service(event=event,context=context)
+# print(result)
 
 # service_execution_id = loads(result['body'])['id']
 # body = {
@@ -67,12 +67,15 @@ print(result)
 # result = update_service_execution(event, context)
 # print(result)
 
+body = {
+  'status': ["wait for approval"]
+}
 event = {
- 'pathParameters':{'document_id':"674626fb97d8fcd05239ca26"},
+ 'pathParameters':{},
  'queryStringParameters':{},
- 'body': "",
+ 'body': dumps(body),
  'headers' : {'Content-Type':'application/json'}
 }
 context = {}
-result = get_service_execution(event, context)
+result = search_service_execution(event, context)
 print(result)

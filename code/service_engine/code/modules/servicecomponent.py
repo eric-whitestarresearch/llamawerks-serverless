@@ -64,14 +64,13 @@ class ServiceComponent:
     else:
       return False
 
-  def get_service_component(self, pack_name = None, service_component_name = None, document_id = None, encode = True):
+  def get_service_component(self, pack_name, service_component_name = None, encode = True):
     """
     Retrieve the service component from the database
 
     Parameters:
       pack_name (String): The name of the pack the service item is in
       service_component_name (String): The name of the service component (Optional)
-      document_id (String): The mongo document id
       encode (Boolean): Should the body in the return be dumped to a text string
 
     Returns:
@@ -79,27 +78,37 @@ class ServiceComponent:
       Int: HTTP status code
     """
 
-    try:
-      assert (pack_name ) or document_id #Make sure with have pack name and component name or a document id
-    except AssertionError:
-      api_gw_response(400, f"Must have a pack name or a document id")
-
     if service_component_name:
       db_filter = {"pack": str(pack_name), "name": str(service_component_name)}
       if not self.service_component_exists(pack_name, service_component_name):
         return api_gw_response(404, f"Could not find {self.component_type_name} {service_component_name} in pack {pack_name}")
-    elif document_id:
-      db_filter = {"_id": ObjectId(document_id)}
     else:
       db_filter = {"pack": str(pack_name)}
       
     service_items = self.db_client.find_all_in_collection(self.db_collection,db_filter)
 
     if not len(service_items):
-      if document_id:
-        return api_gw_response(404, f"Could not find {service_component_name} with id {document_id}")  #Could not find the specified document
-      else:
-        return api_gw_response(204, service_items)  #The pack has no service items
+      return api_gw_response(204, service_items)  #The pack has no service items
+    else: 
+      return api_gw_response(200, service_items, encode=encode)
+    
+  def get_service_component_by_filter(self, filter, encode = True):
+    """
+    Retrieve the service component from the database
+
+    Parameters:
+      filter (Dict): The filter to use when queriring the database
+      encode (Boolean): Should the body in the return be dumped to a text string
+
+    Returns:
+      List: A list of dictonaries that contain the service component definition(s)
+      Int: HTTP status code
+    """
+      
+    service_items = self.db_client.find_all_in_collection(self.db_collection,filter)
+
+    if not len(service_items):
+      return api_gw_response(404, f"Could not find any {self.component_type_name} that matched the filter")  #The pack has no service items
     else: 
       return api_gw_response(200, service_items, encode=encode)
     
@@ -126,6 +135,7 @@ class ServiceComponent:
       db_filter = {"_id": ObjectId(document_id)}
     else:
       db_filter = {'pack' : str(pack_name), 'name': str(service_component_name)}
+      
     delete_count = self.db_client.delete_document(self.db_collection, db_filter)
 
     return api_gw_response(200, {"deleted" : delete_count})

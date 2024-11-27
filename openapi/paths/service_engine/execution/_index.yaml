@@ -13,21 +13,5 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-serviceComponentDeleted:
-  $ref: "./serviceComponentDeleted.yaml"
-serviceComponentUpdated:
-  $ref: "./serviceComponentUpdated.yaml"
-serviceComponentCreated:
-  $ref: "./serviceComponentCreated.yaml"
-dataCollectionCreated:
-  $ref: "./dataCollectionCreated.yaml"
-dataCollection:
-  $ref: "./dataCollection.yaml"
-dataCollectionFilter:
-  $ref: "./dataCollectionFilter.yaml"
-service:
-  $ref: "./service.yaml"
-serviceExecution:
-  $ref: "./serviceExecution.yaml"
-serviceExecutionSearch:
-  $ref: "./serviceExecutionSearch.yaml"
+post:
+  $ref: "./post.yaml"

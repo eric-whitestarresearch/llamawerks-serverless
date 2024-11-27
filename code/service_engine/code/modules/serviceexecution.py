@@ -17,6 +17,7 @@ from .servicecomponent import ServiceComponent
 from .datacollectiondocument import DataCollectionDocument
 from .apigwresponse import api_gw_response
 
+from bson.objectid import ObjectId
 from time import time
 
 
@@ -57,7 +58,49 @@ class ServiceExecution(ServiceComponent):
       Int: HTTP status code
     """
 
-    return self.get_service_component(document_id=document_id)
+    filter =  {"_id": ObjectId(document_id)}
+
+    return self.get_service_component_by_filter(filter)
+  
+  def get_service_execution_by_filter(self, pack = None, service_name = None, document_id = None, status = None, before = None, after = None):
+    """
+    Retrieve the service execution context
+
+    Parameters:
+      pack (String): Optional: The name of the pack the execution is in
+      service_name (String): Optional: the name of the service the execution is for
+      document_id (String): Optional: The ID of the mongo document storing the execution context
+      status (List[String]): Optional: A list of statuses that the execution is in
+      before (Int): Optional: A UNIX timestamp of the submitted before time
+      after (Int): Optional: A UNIX timestamp of the submitted after time 
+      
+    Returns:
+      List: A list of dictonaries that contain the service definition(s)
+      Int: HTTP status code
+    """
+
+    filter = {}
+    if document_id:
+      filter["_id"] = ObjectId(document_id)
+    if type(status) == list and len(status):
+      filter["status"] = {"$in": status}
+    if pack:
+      filter["pack"] = pack
+    if service_name:
+      filter["service_name"] = service_name 
+    if before and not after:
+      filter["submission_time"] = {"$lte" : before}
+    if after and not before:
+      filter["submission_time"] = {"$gte" : after}
+    if after and before:
+      filter["submission_time"] = {"$and" : [{"$lte" : before}, {"$gte" : after}] }
+
+    try:
+      assert len(filter)
+    except AssertionError:
+      return api_gw_response(400, "Must choose at least one filter option")
+    
+    return self.get_service_component_by_filter(filter)
   
   def delete_service_execution(self, document_id):
     """

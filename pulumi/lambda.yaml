@@ -100,3 +100,7 @@ lambdas:
     name: service_execution_delete_service_execution
     package_checksum_location: ../code/service_engine/package.sum
     package_location: ../code/service_engine/package.zip
+  - handler: service_execution.search_service_execution
+    name: service_execution_search_service_execution
+    package_checksum_location: ../code/service_engine/package.sum
+    package_location: ../code/service_engine/package.zip

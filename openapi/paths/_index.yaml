@@ -27,5 +27,7 @@
   $ref: "./service_engine/pack_name/service/service_name/_index.yaml"
 /service_engine/{pack_name}/service/{service_name}/field/{field_name}:
   $ref: "./service_engine/pack_name/service/service_name/field/field_name/_index.yaml"
+/service_engine/execution:
+  $ref: "./service_engine/execution/_index.yaml"  
 /service_engine/execution/id/{document_id}:
   $ref: "./service_engine/execution/id/_index.yaml"  

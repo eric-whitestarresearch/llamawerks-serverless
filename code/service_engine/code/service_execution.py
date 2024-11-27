@@ -44,6 +44,55 @@ def get_service_execution(event, context):
 
 @check_content_type
 @prepare_body
+def search_service_execution(event, context):
+  """
+  Searches for service execution using a set of values
+
+  Parameters:
+    event (Dict): The event from the API Gateway
+    context (Dict): A dict with the contect of the lambda event
+
+  Returns:
+    Dict: A dictonary with the response data for API Gateway.
+  """
+  
+  logging.info("Starting get_service_execution")
+  logging.debug(f"request event: {event}")
+
+  se = ServiceExecution(Database())
+  pack = None
+  service_name = None
+  document_id = None
+  status = None
+  before = None
+  after = None
+
+  body = event['body']
+
+  if 'document_id' in body:
+     document_id = body['document_id']
+  if 'status' in body:
+    status = body['status']
+  if 'pack' in body:
+     pack = body['pack']
+  if 'service_name' in body:
+    service_name = body['service_name']
+  if 'before' in body:
+    before = body['before']
+  if 'after' in body:
+    after = body['after']
+  
+
+   
+  return se.get_service_execution_by_filter(pack = pack,
+                                            service_name = service_name,
+                                            document_id = document_id,
+                                            status = status,
+                                            before = before,
+                                            after = after)
+
+@check_content_type
+@prepare_body
 def update_service_execution(event, context):
   """
   Updates a service execution record
