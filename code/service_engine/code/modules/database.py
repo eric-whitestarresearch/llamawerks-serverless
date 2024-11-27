@@ -179,41 +179,18 @@ class Database:
     connection = self.get_db_connection()
     db = connection[self.database_name]
     db_collection = db[collection]
+    
+
+    pipeline = [{'$match' : filter}, {'$addFields': {"id": {'$toString': "$_id"}}},{'$project': { "_id":0 } | projection }]
 
     try:
-      results = db_collection.find(filter, projection)  
+      results = db_collection.aggregate(pipeline)
     finally:
       self.return_db_connection(connection)
 
     documents = (loads(dumps(results)))
 
     return documents
-  
-  def find_one_in_collection(self, collection, filter):
-    """
-    Finds a document in a collection
-
-    Parameters:
-      self (Database): The object itself.
-      collection (String): The name of the collection to search in
-      filter (Dict): A dictonary containing the filter to search by 
-
-    Returns:
-      Dict: The found document
-    """
-
-    connection = self.get_db_connection()
-    db = connection[self.database_name]
-    db_collection = db[collection]
-
-    try:
-      result = db_collection.find_one(filter)  
-    finally:
-      self.return_db_connection(connection)
-
-    document = (loads(dumps(result)))
-
-    return document
   
   def insert_document(self, collection, document):
     """

@@ -58,7 +58,7 @@ class ServiceComponent:
     
     """
     db_filter = {"pack": str(pack_name), "name": str(service_component_name)}
-    service_items = [self.db_client.find_one_in_collection(self.db_collection,db_filter)]
+    service_items = [self.db_client.find_all_in_collection(self.db_collection,db_filter)]
     if service_items[0]:
       return True
     else:
@@ -92,12 +92,13 @@ class ServiceComponent:
     else: 
       return api_gw_response(200, service_items, encode=encode)
     
-  def get_service_component_by_filter(self, filter, encode = True):
+  def get_service_component_by_filter(self, filter, projection, encode = True):
     """
     Retrieve the service component from the database
 
     Parameters:
       filter (Dict): The filter to use when queriring the database
+      projection (Dict): A mongo DB projection of the fields to include in the output
       encode (Boolean): Should the body in the return be dumped to a text string
 
     Returns:
@@ -105,7 +106,7 @@ class ServiceComponent:
       Int: HTTP status code
     """
       
-    service_items = self.db_client.find_all_in_collection(self.db_collection,filter)
+    service_items = self.db_client.find_all_in_collection(self.db_collection,filter, projection)
 
     if not len(service_items):
       return api_gw_response(404, f"Could not find any {self.component_type_name} that matched the filter")  #The pack has no service items
@@ -135,7 +136,7 @@ class ServiceComponent:
       db_filter = {"_id": ObjectId(document_id)}
     else:
       db_filter = {'pack' : str(pack_name), 'name': str(service_component_name)}
-      
+
     delete_count = self.db_client.delete_document(self.db_collection, db_filter)
 
     return api_gw_response(200, {"deleted" : delete_count})
@@ -197,7 +198,7 @@ class ServiceComponent:
       filter = {'pack': str(pack_name), 'name': str(service_component_definition['name'])}
 
     try:
-      assert self.db_client.find_one_in_collection(self.db_collection, filter)
+      assert self.db_client.find_all_in_collection(self.db_collection, filter)
     except AssertionError:
       if not document_id:
         return api_gw_response(404, f"The {self.component_type_name}  {service_component_definition['name']} in pack {pack_name} does not exist. Use put method to create it")

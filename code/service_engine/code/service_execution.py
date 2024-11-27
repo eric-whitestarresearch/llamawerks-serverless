@@ -81,6 +81,8 @@ def search_service_execution(event, context):
     before = body['before']
   if 'after' in body:
     after = body['after']
+  if 'fields' in body:
+    fields = body['fields']
   
 
    
@@ -89,7 +91,8 @@ def search_service_execution(event, context):
                                             document_id = document_id,
                                             status = status,
                                             before = before,
-                                            after = after)
+                                            after = after,
+                                            fields = fields)
 
 @check_content_type
 @prepare_body

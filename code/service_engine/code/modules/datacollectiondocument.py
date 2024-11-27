@@ -181,8 +181,7 @@ class DataCollectionDocument():
       return db_filter, {} 
     else:
       fields = result_body['project']
-      projection = {fields[i]: 1 for i in range(0, len(fields))}
-      projection['_id'] = 0 
+      projection = {i : 1 for i in fields}
       return db_filter, projection
   
   @check_data_collection_exists
@@ -257,7 +256,7 @@ class DataCollectionDocument():
     db_collection = f"{pack_name}.{data_collection_name}"
 
     db_filter = {"_id": ObjectId(document_id)}
-    documents = self.db_client.find_one_in_collection(db_collection,db_filter)
+    documents = self.db_client.find_all_in_collection(db_collection,db_filter)
 
     if not documents:
       return api_gw_response(404, f"A document with id {document_id} not found in data collection {data_collection_name} in pack {pack_name}")

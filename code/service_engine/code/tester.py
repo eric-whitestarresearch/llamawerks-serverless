@@ -68,7 +68,8 @@ from json import dumps, loads
 # print(result)
 
 body = {
-  'status': ["wait for approval"]
+  'status': ["wait for approval"],
+  'fields': ['pack', 'service_name', 'status','variables/cat_name']
 }
 event = {
  'pathParameters':{},

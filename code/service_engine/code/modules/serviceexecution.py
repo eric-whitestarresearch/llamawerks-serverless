@@ -62,7 +62,7 @@ class ServiceExecution(ServiceComponent):
 
     return self.get_service_component_by_filter(filter)
   
-  def get_service_execution_by_filter(self, pack = None, service_name = None, document_id = None, status = None, before = None, after = None):
+  def get_service_execution_by_filter(self, pack = None, service_name = None, document_id = None, status = None, before = None, after = None, fields = None):
     """
     Retrieve the service execution context
 
@@ -73,6 +73,7 @@ class ServiceExecution(ServiceComponent):
       status (List[String]): Optional: A list of statuses that the execution is in
       before (Int): Optional: A UNIX timestamp of the submitted before time
       after (Int): Optional: A UNIX timestamp of the submitted after time 
+      fields (List[String]): Optional: A List of strings with fields to include in the output
       
     Returns:
       List: A list of dictonaries that contain the service definition(s)
@@ -100,7 +101,13 @@ class ServiceExecution(ServiceComponent):
     except AssertionError:
       return api_gw_response(400, "Must choose at least one filter option")
     
-    return self.get_service_component_by_filter(filter)
+    if type(fields) == list:
+      projection = {i.replace('/','.') : 1 for i in fields}
+    else: 
+      projection = {}
+    
+        
+    return self.get_service_component_by_filter(filter, projection)
   
   def delete_service_execution(self, document_id):
     """

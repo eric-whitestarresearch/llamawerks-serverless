@@ -44,3 +44,8 @@ properties:
   after:
     type: integer
     description: A UNIX timestamp of the executed after time
+  fields:
+    type: array
+    description: A list of fields to include in the output
+    items:
+      type: string
