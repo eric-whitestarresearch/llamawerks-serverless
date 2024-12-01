@@ -1,6 +1,7 @@
 from service import render_service, render_service_field, execute_service
 from service_execution import update_service_execution, get_service_execution, search_service_execution
 from json import dumps, loads
+import time
 
 # event = {
 #  'pathParameters':{'pack_name':'blarf','service_name':'feed_cat'},
@@ -78,5 +79,8 @@ event = {
  'headers' : {'Content-Type':'application/json'}
 }
 context = {}
+start = time.time()
 result = search_service_execution(event, context)
+end = time.time()
 print(result)
+print(f"Runtime: {end-start}")

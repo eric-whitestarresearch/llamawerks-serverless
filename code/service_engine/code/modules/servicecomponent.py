@@ -165,7 +165,7 @@ class ServiceComponent:
       data_collection = self.db_client.find_all_in_collection(self.db_collection, filter)
 
       if len(data_collection):
-        return api_gw_response(200, { "id": data_collection[0]['_id']['$oid'] })
+        return api_gw_response(200, { "id": data_collection[0]['id'] })
     
     new_service_component_id = self.db_client.insert_document(self.db_collection, service_component_definition)
 

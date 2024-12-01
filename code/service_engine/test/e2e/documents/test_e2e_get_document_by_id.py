@@ -26,7 +26,7 @@ def test_e2e_get_document_by_id(document_multi):
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_multi[0]['pack_name']}/data_collection/{document_multi[0]['data_collection_name']}/id/{document_multi[0]['doc_id']}")
   response = urllib.request.urlopen(req)
 
-  retrieved_doc_id = loads(response.read().decode('utf-8'))['_id']['$oid']
+  retrieved_doc_id = loads(response.read().decode('utf-8'))[0]['id']
 
   assert response.getcode() == 200 and retrieved_doc_id == document_multi[0]['doc_id'] #We should get back the document that was created
 
