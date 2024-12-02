@@ -24,6 +24,71 @@ from json.decoder import JSONDecodeError
 import logging
 import re
 
+
+def apigw_handler_document(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'GET':
+      return get_documents(event, context)
+    case 'PATCH':
+      return update_document_by_filter(event, context)
+    case 'POST':
+      return get_document_with_filter(event,context)
+    case 'PUT':
+      return create_document(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+    
+def apigw_handler_document_id(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'DELETE':
+      return delete_document_by_id(event, context)
+    case 'GET':
+      return get_document_by_id(event, context)
+    case 'PATCH':
+      return update_document_by_id(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+    
+def apigw_handler_service_field(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'POST':
+      return get_document_with_filter(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+    
 def validate_doc_id(func):
   """
   Decorator to check if the document ID is valid

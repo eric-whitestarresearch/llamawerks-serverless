@@ -24,6 +24,30 @@ import logging
 import modules.logger
 
 
+def apigw_handler_data_collection(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'DELETE':
+      return delete_data_collection(event, context)
+    case 'GET':
+      return get_data_collections(event, context)
+    case 'PATCH':
+      return update_data_collection(event, context)
+    case 'PUT':
+      return create_data_collection(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+
 
 
 def get_data_collections(event, context):

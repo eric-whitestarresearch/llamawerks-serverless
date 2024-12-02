@@ -21,6 +21,47 @@ import logging
 import modules.logger
 
 
+def apigw_handler_execution(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'POST':
+      return search_service_execution(event,context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+
+def apigw_handler_execution_id(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'DELETE':
+      return delete_service_execution(event,context)
+    case 'GET':
+      return get_service_execution(event,context)
+    case 'POST':
+      return update_service_execution(event,context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+
+
 def get_service_execution(event, context):
   """
   Returns the context of a service execution

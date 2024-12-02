@@ -23,7 +23,49 @@ from json.decoder import JSONDecodeError
 import logging
 import modules.logger
 
+def apigw_handler_service(event, context):
+  """
+  Calls the function that handles the HTTP method
 
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'DELETE':
+      return delete_service(event, context)
+    case 'GET':
+      return get_services(event, context)
+    case 'PATCH':
+      return update_service(event, context)
+    case 'PUT':
+      return create_service(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+    
+def apigw_handler_service_name(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'GET':
+      return render_service(event, context)
+    case 'POST':
+      return execute_service(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
 def get_services(event, context):
   """
   Reurns the definition of the service(s)
