@@ -25,7 +25,7 @@ import string
 def test_e2e_put_document(document_single):
   BASE_URL = environ.get('API_BASE_URL')
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document")
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 200 #The fact that the document exists means the fixture was able to call the put. If we get something else it mean the fixiture was unable to create
@@ -61,7 +61,7 @@ def test_e2e_put_document_data_collection_does_not_exist():
   body = ""
 
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document", data=data, method='PUT')
   req.add_header("Content-Type", "application/json")
   
   error_code = None
@@ -80,7 +80,7 @@ def test_e2e_put_document_no_content_type():
   body = ""
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document", data=data, method='PUT')
 
   error_code = None
   
@@ -100,7 +100,7 @@ def test_e2e_put_document_content_type_xml():
   body = ""
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document", data=data, method='PUT')
   req.add_header("Content-Type", "application/xml")
 
   error_code = None
@@ -121,7 +121,7 @@ def test_e2e_put_document_invalid_json():
   body = '{"a"}'
   
   data= body.encode("utf-8")
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}", data=data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document", data=data, method='PUT')
   req.add_header("Content-Type", "application/json")
 
   error_code = None

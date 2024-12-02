@@ -23,7 +23,7 @@ from secrets import token_hex
 def test_e2e_get_document_by_id(document_multi):
   BASE_URL = environ.get('API_BASE_URL')
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_multi[0]['pack_name']}/data_collection/{document_multi[0]['data_collection_name']}/id/{document_multi[0]['doc_id']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_multi[0]['pack_name']}/data_collection/{document_multi[0]['data_collection_name']}/document/id/{document_multi[0]['doc_id']}")
   response = urllib.request.urlopen(req)
 
   retrieved_doc_id = loads(response.read().decode('utf-8'))[0]['id']
@@ -35,7 +35,7 @@ def test_e2e_get_document_by_id_not_exist(document_single):
   BASE_URL = environ.get('API_BASE_URL')
 
   doc_id = token_hex(12) #12 Bytes gets us 24 hex characters
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{doc_id}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{doc_id}")
   
   error_code = None
   try:
@@ -50,7 +50,7 @@ def test_e2e_get_document_invalid_id(document_single):
   BASE_URL = environ.get('API_BASE_URL')
 
   doc_id = 'ww' + token_hex(11)
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{doc_id}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{doc_id}")
   
   error_code = None
   try:
@@ -65,7 +65,7 @@ def test_e2e_get_document_invalid_id_too_long(document_single):
   BASE_URL = environ.get('API_BASE_URL')
 
   doc_id = token_hex(25)
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{doc_id}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{doc_id}")
   
   error_code = None
   try:
@@ -80,7 +80,7 @@ def test_e2e_get_document_invalid_id_too_short(document_single):
   BASE_URL = environ.get('API_BASE_URL')
 
   doc_id = token_hex(3)
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{doc_id}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{doc_id}")
 
   error_code = None
   try:

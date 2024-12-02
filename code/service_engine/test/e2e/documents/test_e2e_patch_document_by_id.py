@@ -30,7 +30,7 @@ def test_e2e_patch_document_by_id(document_single):
   updated_body['document']['hair_length'] = 'short'
  
   data= bytes(dumps(updated_body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{document_single['doc_id']}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{document_single['doc_id']}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
 
   response = urllib.request.urlopen(req)
@@ -46,7 +46,7 @@ def test_e2e_patch_document_by_id_no_change(document_single):
   updated_body = {"document": document_single['body']}
  
   data= bytes(dumps(updated_body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{document_single['doc_id']}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{document_single['doc_id']}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
 
   response = urllib.request.urlopen(req)
@@ -64,7 +64,7 @@ def test_e2e_patch_document_by_id_doc_not_exist(document_single):
   doc_id = token_hex(12)
  
   data= bytes(dumps(updated_body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{doc_id}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{doc_id}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
 
   response = urllib.request.urlopen(req)
@@ -80,7 +80,7 @@ def test_e2e_patch_document_by_id_bad_schema(document_single):
   malformed_body = {"document2": document_single['body']}
  
   data= bytes(dumps(malformed_body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{document_single['doc_id']}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{document_single['doc_id']}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
 
   error_code = None
@@ -100,7 +100,7 @@ def test_e2e_patch_document_by_id_data_collection_not_exist():
   body =  {"document": {}}
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{doc_id}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document/id/{doc_id}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
 
   error_code = None
@@ -123,7 +123,7 @@ def test_e2e_patch_document_by_id_no_content_type():
   body =  {"document": {}}
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{doc_id}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document/id/{doc_id}", data=data, method='PATCH')
 
   error_code = None
   
@@ -144,7 +144,7 @@ def test_e2e_put_document_by_id_content_type_xml():
   body =  {"document": {}}
  
   data= bytes(dumps(body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{doc_id}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document/id/{doc_id}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/xml")
 
   error_code = None
@@ -166,7 +166,7 @@ def test_e2e_patch_document_by_id_dirty_input():
   body =  {"document": {"$.bad":"nicetry"}}
   
   data= dumps(body).encode("utf-8")
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{doc_id}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document/id/{doc_id}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
 
   error_code = None
@@ -189,7 +189,7 @@ def test_e2e_patch_document_by_id_invalid_json():
   body = '{"a"}'
   
   data= body.encode("utf-8")
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{doc_id}", data=data, method='PATCH')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document/id/{doc_id}", data=data, method='PATCH')
   req.add_header("Content-Type", "application/json")
 
   error_code = None
