@@ -36,6 +36,11 @@ servers:
       apiid:
         description: The API gteway id
         default: abc123
+  - url: 'https://api.{env}.llamawerks.net'
+    variables:
+      env:
+        description: Environment dev
+        default: dev
 x-amazon-apigateway-request-validators:
   all:
     validateRequestParameters: true
@@ -173,12 +178,137 @@ components:
     service:
       type: object
       properties:
-        document:
-          type: object
+        name:
+          type: string
+          description: The name of the service
+        pack:
+          type: string
+          description: THe pack this service belongs to
+        fields:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of this field
+              display_name:
+                type: string
+                description: The name that should be presented to the user
+              wait_to_render:
+                type: boolean
+                description: Should the values be included at the time of the serivce render
+              filter:
+                type: string
+                description: The name of the data collection filter used to generate this choice
+              data_collection:
+                type: string
+                description: The name of the data collection to execute the filter against
+              display_type:
+                type: string
+                description: The type of element displayed to the use
+                enum:
+                  - drop_down
+                  - text
+                  - grid
+                  - check_box
+                  - radio_button
+              selection_key:
+                type: string
+                description: The key in the returned data used for the user selection
+            required:
+              - name
+              - display_name
+              - wait_to_render
+              - filter
+              - data_collection
+              - display_type
       required:
         - pack
         - name
-        - parameter
+        - fields
+    serviceExecution:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of the execution
+          enum:
+            - submitted
+            - complete
+            - error
+            - in progress
+            - wait for approval
+            - approved
+            - declined
+        result:
+          type: object
+          description: The result of an execution step
+          properties:
+            step:
+              type: string
+              description: The name of the step
+            status:
+              type: string
+              description: The status of the step
+              enum:
+                - submitted
+                - complete
+                - error
+                - in progress
+                - wait for approval
+                - approved
+                - declined
+            output:
+              type: string
+              description: The output of the step
+            error:
+              type: string
+              description: The error output of the step if any
+          required:
+            - step
+            - status
+            - output
+            - error
+      required:
+        - status
+    serviceExecutionSearch:
+      type: object
+      description: The parameters for the search
+      properties:
+        status:
+          type: array
+          items:
+            type: string
+            description: Optional the status of the execution
+            enum:
+              - submitted
+              - complete
+              - error
+              - in progress
+              - wait for approval
+              - approved
+              - declined
+        document_id:
+          type: string
+          description: Optional the id of the execution Should be a 24 charcter hex string
+        pack:
+          type: string
+          description: The pack the service belongs to
+        service_name:
+          type: string
+          description: The name of the service
+        before:
+          type: integer
+          description: A UNIX timestamp of the executed before time
+        after:
+          type: integer
+          description: A UNIX timestamp of the executed after time
+        fields:
+          type: array
+          description: A list of fields to include in the output
+          items:
+            type: string
   parameters:
     pack_name:
       name: pack_name
@@ -190,6 +320,13 @@ components:
     service_name:
       name: service_name
       description: The name of the service
+      in: path
+      required: true
+      schema:
+        type: string
+    field_name:
+      name: field_name
+      description: The name of the field in the service to render
       in: path
       required: true
       schema:
@@ -275,9 +412,9 @@ paths:
       tags:
         - Data Collection
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_get_data_collections/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_data_collection/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_get_data_collections_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_data_collection_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
     put:
@@ -312,9 +449,9 @@ paths:
       tags:
         - Data Collection
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_create_data_collection/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_data_collection/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_create_data_collection_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_data_collection_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
     patch:
@@ -351,9 +488,9 @@ paths:
       tags:
         - Data Collection
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_update_data_collection/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_data_collection/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_update_data_collection_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_data_collection_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
     delete:
@@ -371,129 +508,44 @@ paths:
       tags:
         - Data Collection
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_delete_data_collection/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_data_collection/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_delete_data_collection_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_data_collection_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
-  '/service_engine/{pack_name}/filter':
-    get:
-      operationId: data_collection_filter.get_data_collection_filter
-      parameters:
-        - $ref: '#/components/parameters/pack_name'
-        - $ref: '#/components/parameters/filter_name_in_query'
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Data Collection
       responses:
         '200':
-          description: Retreived the filter definition(s)
-        '204':
-          description: There are no filters in the pack
-        '404':
-          description: Could not find the filterin the pack
-      tags:
-        - Data Collection Filter
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_filter_get_data_collection_filter/invocations'
-        type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_filter_get_data_collection_filter_role'
-        httpMethod: POST
-      x-amazon-apigateway-request-validator: params-only
-    put:
-      operationId: data_collection_filter.create_data_collection_filter
-      parameters:
-        - $ref: '#/components/parameters/pack_name'
-      requestBody:
-        x-body-name: dataCollectionFilter_definition
-        description: The definition of the data collection filter
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/dataCollectionFilter'
-      responses:
-        '200':
-          description: 'The data collection filter already exists, no action taken'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/serviceComponentCreated'
-        '201':
-          description: Successfully created the data collection filter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/serviceComponentCreated'
-        '400':
-          description: The body does not meet the schema requirements
-        '422':
-          description: The pack name specified in the URI and the data collection filter definition do not match
-      tags:
-        - Data Collection Filter
-      x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_filter_create_data_collection_filter/invocations'
-        type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_filter_create_data_collection_filter_role'
-        httpMethod: POST
-      x-amazon-apigateway-request-validator: all
-    patch:
-      operationId: data_collection_filter.update_data_collection_filter
-      parameters:
-        - $ref: '#/components/parameters/pack_name'
-      requestBody:
-        x-body-name: dataCollectionFilter_definition
-        description: The definition of the data collection
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/dataCollectionFilter'
-      responses:
-        '202':
-          description: Data collection filter definition updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/serviceComponentUpdated'
-        '208':
-          description: 'Data collection definition filter matched existing definition, no change occured'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/serviceComponentUpdated'
-        '400':
-          description: The body does not meet the schema requirements
-        '404':
-          description: The data collection filter does not exist in the pack. Create it using the put method
-        '422':
-          description: The pack name specified in the URI and the data collection filter definition do not match
-      tags:
-        - Data Collection Filter
-      x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_filter_update_data_collection_filter/invocations'
-        type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_filter_update_data_collection_filter_role'
-        httpMethod: POST
-      x-amazon-apigateway-request-validator: all
-    delete:
-      operationId: data_collection_filter.delete_data_collection_filter
-      parameters:
-        - $ref: '#/components/parameters/pack_name'
-        - $ref: '#/components/parameters/filter_name_in_query_req'
-      responses:
-        '200':
-          description: Data collection deleted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/serviceComponentDeleted'
-      tags:
-        - Data Collection Filter
-      x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_data_collection_filter_delete_data_collection_filter/invocations'
-        type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_data_collection_filter_delete_data_collection_filter_role'
-        httpMethod: POST
-      x-amazon-apigateway-request-validator: params-only
-  '/service_engine/{pack_name}/data_collection/{data_collection_name}':
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  '/service_engine/{pack_name}/data_collection/{data_collection_name}/document':
     get:
       operationId: document.get_documents
       parameters:
@@ -509,9 +561,9 @@ paths:
       tags:
         - Documents
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_get_documents/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_get_documents_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
     post:
@@ -539,9 +591,9 @@ paths:
       tags:
         - Documents
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_get_document_with_filter/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_get_document_with_filter_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
     put:
@@ -569,9 +621,9 @@ paths:
       tags:
         - Documents
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_create_document/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_create_document_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
     patch:
@@ -608,12 +660,44 @@ paths:
       tags:
         - Documents
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_update_document_by_filter/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_update_document_by_filter_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
-  '/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{document_id}':
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Documents
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  '/service_engine/{pack_name}/data_collection/{data_collection_name}/document/id/{document_id}':
     get:
       operationId: document.get_document_by_id
       parameters:
@@ -628,9 +712,9 @@ paths:
       tags:
         - Documents
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_get_document_by_id/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document_id/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_get_document_by_id_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_id_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
     patch:
@@ -664,9 +748,9 @@ paths:
       tags:
         - Documents
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_update_document_by_id/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document_id/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_update_document_by_id_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_id_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
     delete:
@@ -687,11 +771,192 @@ paths:
       tags:
         - Documents
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_delete_document_by_id/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document_id/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_delete_document_by_id_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_id_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Documents
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  '/service_engine/{pack_name}/filter':
+    get:
+      operationId: data_collection_filter.get_data_collection_filter
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+        - $ref: '#/components/parameters/filter_name_in_query'
+      responses:
+        '200':
+          description: Retreived the filter definition(s)
+        '204':
+          description: There are no filters in the pack
+        '404':
+          description: Could not find the filterin the pack
+      tags:
+        - Data Collection Filter
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_filter/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_filter_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: params-only
+    put:
+      operationId: data_collection_filter.create_data_collection_filter
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+      requestBody:
+        x-body-name: dataCollectionFilter_definition
+        description: The definition of the data collection filter
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dataCollectionFilter'
+      responses:
+        '200':
+          description: 'The data collection filter already exists, no action taken'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/serviceComponentCreated'
+        '201':
+          description: Successfully created the data collection filter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/serviceComponentCreated'
+        '400':
+          description: The body does not meet the schema requirements
+        '422':
+          description: The pack name specified in the URI and the data collection filter definition do not match
+      tags:
+        - Data Collection Filter
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_filter/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_filter_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+    patch:
+      operationId: data_collection_filter.update_data_collection_filter
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+      requestBody:
+        x-body-name: dataCollectionFilter_definition
+        description: The definition of the data collection
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dataCollectionFilter'
+      responses:
+        '202':
+          description: Data collection filter definition updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/serviceComponentUpdated'
+        '208':
+          description: 'Data collection definition filter matched existing definition, no change occured'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/serviceComponentUpdated'
+        '400':
+          description: The body does not meet the schema requirements
+        '404':
+          description: The data collection filter does not exist in the pack. Create it using the put method
+        '422':
+          description: The pack name specified in the URI and the data collection filter definition do not match
+      tags:
+        - Data Collection Filter
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_filter/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_filter_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+    delete:
+      operationId: data_collection_filter.delete_data_collection_filter
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+        - $ref: '#/components/parameters/filter_name_in_query_req'
+      responses:
+        '200':
+          description: Data collection deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/serviceComponentDeleted'
+      tags:
+        - Data Collection Filter
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_filter/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_filter_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Data Collection Filter
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
   '/service_engine/{pack_name}/service/':
     get:
       operationId: service.get_services
@@ -708,9 +973,9 @@ paths:
       tags:
         - Service
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_service_get_services/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_get_services_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
     put:
@@ -745,9 +1010,9 @@ paths:
       tags:
         - Service
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_service_create_service/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_create_service_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
     patch:
@@ -784,9 +1049,9 @@ paths:
       tags:
         - Service
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_service_update_service/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_update_service/_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
     delete:
@@ -804,8 +1069,305 @@ paths:
       tags:
         - Service
       x-amazon-apigateway-integration:
-        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_service_delete_service/invocations'
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_service_delete_service_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: params-only
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Service
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  '/service_engine/{pack_name}/service/{service_name}':
+    get:
+      operationId: service.render_service
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+        - $ref: '#/components/parameters/service_name'
+      responses:
+        '200':
+          description: Returns a render of the service
+        '400':
+          description: Could not render the service
+        '404':
+          description: The specified data collection or data collection filter specified in the service does not exist in the pack
+      tags:
+        - Service
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service_name/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_name_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: params-only
+    post:
+      operationId: service.execute_service
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+        - $ref: '#/components/parameters/service_name'
+      requestBody:
+        x-body-name: service_variables
+        description: The  variables for the service execution
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: The service was submitted for execution
+        '400':
+          description: Could not submit the service for execution. Check variables
+        '404':
+          description: The specified service does not exist in the pack
+      tags:
+        - Service
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service_name/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_name_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Service
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  '/service_engine/{pack_name}/service/{service_name}/field/{field_name}':
+    post:
+      operationId: document.get_document_with_filter
+      parameters:
+        - $ref: '#/components/parameters/pack_name'
+        - $ref: '#/components/parameters/service_name'
+        - $ref: '#/components/parameters/field_name'
+      requestBody:
+        x-body-name: filter_variables
+        description: Variables for the filter
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Get all of the data collections
+        '204':
+          description: There are no documents in the data collection that match the filter
+        '404':
+          description: The specified data collection or filter does not exist in the pack
+      tags:
+        - Service
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service_field/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_field_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Service
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+  /service_engine/execution:
+    post:
+      operationId: service_execution.search_service_execution
+      parameters: null
+      requestBody:
+        description: The search parameters for the search
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/serviceExecutionSearch'
+      responses:
+        '200':
+          description: The service execution search found records
+        '400':
+          description: Search does not meet schema requirements
+        '404':
+          description: No executions found
+      tags:
+        - Service Execution
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_execution/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_execution_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+  '/service_engine/execution/id/{document_id}':
+    get:
+      operationId: servicee_xecution.get_service_execution
+      parameters:
+        - $ref: '#/components/parameters/document_id'
+      responses:
+        '200':
+          description: The service execution was found
+        '400':
+          description: Invalid request parameters
+        '404':
+          description: service execution not found
+      tags:
+        - Service Execution
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_execution_id/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_execution_id_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+    post:
+      operationId: servicee_xecution.update_service_execution
+      parameters:
+        - $ref: '#/components/parameters/document_id'
+      requestBody:
+        x-body-name: service_execution updates
+        description: The updates of the service execution
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/serviceExecution'
+      responses:
+        '202':
+          description: The service execution was updated
+        '208':
+          description: No changes to service execution
+        '400':
+          description: Does not meet schema requirements
+      tags:
+        - Service Execution
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_execution_id/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_execution_id_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+    delete:
+      operationId: service_execution.delete_service_execution
+      parameters:
+        - $ref: '#/components/parameters/document_id'
+      responses:
+        '200':
+          description: The service execution was deleted
+        '400':
+          description: Invalid request parameters
+      tags:
+        - Service Execution
+      x-amazon-apigateway-integration:
+        uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_execution_id/invocations'
+        type: aws_proxy
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_execution_id_role'
+        httpMethod: POST
+      x-amazon-apigateway-request-validator: all
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      tags:
+        - Service Execution
+      responses:
+        '200':
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: never
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''

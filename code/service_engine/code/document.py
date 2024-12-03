@@ -17,34 +17,62 @@ from modules.datacollectiondocument import DataCollectionDocument
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
+from modules.preparebody import prepare_body
+from modules.validiatedocumentid import validate_doc_id
 import modules.logger
 from json import loads
+from json.decoder import JSONDecodeError
 import logging
-import re
 
-def validate_doc_id(func):
+
+
+def apigw_handler_document(event, context):
   """
-  Decator to check if the document ID is valid
+  Calls the function that handles the HTTP method
 
   Parameters:
-    func(Function): The function you want to execute
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
 
-  Returns
-    The response of the function if the content type is correct, otherwise a HTTP 400
+  Returns:
+    Dict with api gateway response 
   """
 
-  def wrapper(*args, **kwargs):
+  match event['httpMethod']:
+    case 'GET':
+      return get_documents(event, context)
+    case 'PATCH':
+      return update_document_by_filter(event, context)
+    case 'POST':
+      return get_document_with_filter(event,context)
+    case 'PUT':
+      return create_document(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
     
-    event = kwargs['event'] if 'event' in kwargs else args[0]
-    document_id = event['pathParameters']['document_id'] #API Gateway will enforce the existance of the document id, but it won't validate it
-    regex = '^[0-9a-f]{24}$'
+def apigw_handler_document_id(event, context):
+  """
+  Calls the function that handles the HTTP method
 
-    if not re.search(regex, document_id):
-      return api_gw_response(400, "Document ID must be 24 hexadecimal lowercase characters")
-    else:
-      return func(*args, **kwargs)
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'DELETE':
+      return delete_document_by_id(event, context)
+    case 'GET':
+      return get_document_by_id(event, context)
+    case 'PATCH':
+      return update_document_by_id(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
     
-  return wrapper
+
 def get_documents(event, context):
   """
   Reurns documents in data collection
@@ -68,6 +96,7 @@ def get_documents(event, context):
   return dcd.get_documents(pack_name, data_collection_name)
 
 @check_content_type
+@prepare_body
 def get_document_with_filter(event, context):
   """
   Reurns documents matching a filter
@@ -88,12 +117,13 @@ def get_document_with_filter(event, context):
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
   filter_name = event['queryStringParameters']['filter_name']   
-  filter_variables = loads(event['body'])
   project = event['queryStringParameters']['project'] if 'project' in event['queryStringParameters'] else False
+  filter_variables = event['body']
 
   return dcd.get_document_with_filter(pack_name, data_collection_name, filter_name, filter_variables, project)
 
 @check_content_type
+@prepare_body
 def create_document(event, context):
   """
   Create a new document
@@ -113,11 +143,12 @@ def create_document(event, context):
 
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
-  document = loads(event['body'])
+  document = event['body']
 
   return dcd.create_document(pack_name, data_collection_name, document)
 
 @check_content_type
+@prepare_body
 def update_document_by_filter(event, context):
   """
   Updates a document(s) matching a filter
@@ -138,7 +169,7 @@ def update_document_by_filter(event, context):
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
   filter_name = event['queryStringParameters']['filter_name']
-  document_and_vars = loads(event['body'])
+  document_and_vars = event['body']
 
   return dcd.update_document(pack_name, data_collection_name, filter_name, document_and_vars['variables'], document_and_vars['document'])
 
@@ -168,6 +199,7 @@ def get_document_by_id(event, context):
 
 @check_content_type
 @validate_doc_id
+@prepare_body
 def update_document_by_id(event, context):
   """
   Updates a document matching the id
@@ -188,7 +220,7 @@ def update_document_by_id(event, context):
   pack_name = event['pathParameters']['pack_name']
   data_collection_name = event['pathParameters']['data_collection_name']
   document_id = event['pathParameters']['document_id']
-  document = loads(event['body'])
+  document = event['body']
 
   return dcd.update_document_by_id(pack_name, data_collection_name, document_id, document['document'])
 

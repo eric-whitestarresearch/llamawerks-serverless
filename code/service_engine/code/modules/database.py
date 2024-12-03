@@ -17,10 +17,8 @@
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from bson import ObjectId, json_util
-import urllib.parse
 from jsonschema import validate, ValidationError
-import json
-import urllib.request
+from urllib.parse import quote_plus
 import os
 from bson.json_util import dumps
 from json import loads
@@ -32,6 +30,11 @@ class DBConfigValidationError(ValidationError):
 class DBConnectionFailure(ConnectionFailure):
   pass
 
+class MissingDBHost(BaseException):
+  pass
+
+class MissingDBDatabase(BaseException):
+  pass
 class MissingAWSToken(BaseException):
   pass
 
@@ -58,30 +61,34 @@ class Database:
     """
 
     logging.info("Databse INIT")
-    aws_token = os.environ.get('AWS_SESSION_TOKEN')
 
-    if aws_token == None:
-      raise MissingAWSToken("The environment variable for AWS_SESSION_TOKEN is not set")
+    aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    mongodb_host = os.environ.get('MONGODB_HOST')
+    mongodb_database = os.environ.get('MONGODB_DATABASE')
     
-    logging.info("Getting DB Config")
-    req = urllib.request.Request('http://localhost:2773/systemsmanager/parameters/get?name=llamawerks_db_config&withDecryption=true')
-    req.add_header('X-Aws-Parameters-Secrets-Token', aws_token)
-    result = urllib.request.urlopen(req).read()
-
-    ssmparam = json.loads(result)
-    db_config = json.loads(ssmparam['Parameter']['Value'])
-
     try:
-      self.validate_config(db_config)
-    except ValidationError as e:
-      raise DBConfigValidationError(f"The DB config is invalid\n" + str(e))
-
-    username = urllib.parse.quote_plus(db_config['username'])
-    password = urllib.parse.quote_plus(db_config['password'])
+      assert aws_access_key_id and aws_secret_access_key and aws_session_token
+    except AssertionError:
+      raise MissingAWSToken("The environment variables for aws access tokens are not set. Require: AWS_SESSION_TOKEN, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY")
+    
+    try:
+      assert mongodb_host
+    except AssertionError:
+      raise MissingDBHost("Missing the MONGODB_HOST environment variable")
+    
+    try:
+      assert mongodb_database
+    except AssertionError:
+      raise MissingDBDatabase("Missing the MONGODB_DATABASE environment variable")
   
-    logging.info(f"Connecting to db host: {db_config['host']} database: {db_config['database']} ")
-    self.connection =  MongoClient(f"mongodb://{username}:{password}@{db_config['host']}:{db_config['port']}")
-    self.database_name = db_config['database']
+    logging.info(f"Connecting to db host: {mongodb_host} database: {mongodb_database} ")
+    
+    connection_string = f"mongodb+srv://{mongodb_host}/?authSource=%24external&authMechanism=MONGODB-AWS"
+    
+    self.connection =  MongoClient(connection_string,tls=True)
+    self.database_name = mongodb_database
 
 
   def __del__(self):
@@ -115,13 +122,15 @@ class Database:
       '$schema': 'http://json-schema.org/draft-04/schema#',
       'type': 'object',
       'properties': {
+        'protocol': {'type':'string'},
         'host': {'type': 'string'},
         'port': {'type': 'integer'},
+        'tls': {'type': 'boolean'},
         'database': {'type': 'string'},
         'username': {'type': 'string'},
         'password': {'type': 'string'}
       },
-      'required': ['host', 'port', 'database', 'username', 'password']}
+      'required': ['protocol', 'host', 'port', 'database', 'username', 'password']}
 
     validate(config, schema) #If we validate nothing happens, if we fail a ValidationError exception is thrown
 
@@ -171,41 +180,18 @@ class Database:
     connection = self.get_db_connection()
     db = connection[self.database_name]
     db_collection = db[collection]
+    
+
+    pipeline = [{'$match' : filter}, {'$addFields': {"id": {'$toString': "$_id"}}},{'$project': { "_id":0 } | projection }]
 
     try:
-      results = db_collection.find(filter, projection)  
+      results = db_collection.aggregate(pipeline)
     finally:
       self.return_db_connection(connection)
 
     documents = (loads(dumps(results)))
 
     return documents
-  
-  def find_one_in_collection(self, collection, filter):
-    """
-    Finds a document in a collection
-
-    Parameters:
-      self (Database): The object itself.
-      collection (String): The name of the collection to search in
-      filter (Dict): A dictonary containing the filter to search by 
-
-    Returns:
-      Dict: The found document
-    """
-
-    connection = self.get_db_connection()
-    db = connection[self.database_name]
-    db_collection = db[collection]
-
-    try:
-      result = db_collection.find_one(filter)  
-    finally:
-      self.return_db_connection(connection)
-
-    document = (loads(dumps(result)))
-
-    return document
   
   def insert_document(self, collection, document):
     """

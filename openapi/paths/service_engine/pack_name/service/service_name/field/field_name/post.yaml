@@ -13,38 +13,31 @@
 #      See the License for the specific language governing permissions and
 #      limitations under the License.
 
-operationId: document.update_document_by_id
+operationId: document.get_document_with_filter
 parameters:
   - $ref: "../../../../../../../parameters/_index.yaml#/pack_name"
-  - $ref: "../../../../../../../parameters/_index.yaml#/data_collection_name"
-  - $ref: "../../../../../../../parameters/_index.yaml#/document_id"
+  - $ref: "../../../../../../../parameters/_index.yaml#/service_name"
+  - $ref: "../../../../../../../parameters/_index.yaml#/field_name"
 requestBody:
-  x-body-name: document
-  description: The updates to the document and the variables
+  x-body-name: filter_variables
+  description: Variables for the filter
   required: True
   content:
     application/json:
       schema:
         type: object
-        properties:
-          document:
-            type: object
-        required:
-          - document
 responses:
   "200":
-    description: Updated the document
-    content:
-      application/json:
-        schema:
-          $ref: "../../../../../../../schemas/_index.yaml#/serviceComponentUpdated"
+    description: Get all of the data collections
+  "204":
+    description: There are no documents in the data collection that match the filter
   "404":
-    description: The specified data collection does not exist in the pack
+    description: The specified data collection or filter does not exist in the pack
 tags:
-  - Documents
+  - Service
 x-amazon-apigateway-integration:
-  uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_update_document_by_id/invocations
+  uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service_field/invocations
   type: aws_proxy
-  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_update_document_by_id_role
+  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_field_role
   httpMethod: POST
 x-amazon-apigateway-request-validator: all

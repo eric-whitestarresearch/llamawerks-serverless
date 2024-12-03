@@ -15,9 +15,9 @@
 
 operationId: document.update_document_by_filter
 parameters:
-  - $ref: "../../../../../parameters/_index.yaml#/pack_name"
-  - $ref: "../../../../../parameters/_index.yaml#/data_collection_name"
-  - $ref: "../../../../../parameters/_index.yaml#/filter_name_in_query_req"
+  - $ref: "../../../../../../parameters/_index.yaml#/pack_name"
+  - $ref: "../../../../../../parameters/_index.yaml#/data_collection_name"
+  - $ref: "../../../../../../parameters/_index.yaml#/filter_name_in_query_req"
 requestBody:
   x-body-name: document_and_vars
   description: The updates to the document and the variables
@@ -40,14 +40,14 @@ responses:
     content:
       application/json:
         schema:
-          $ref: "../../../../../schemas/_index.yaml#/serviceComponentUpdated"
+          $ref: "../../../../../../schemas/_index.yaml#/serviceComponentUpdated"
   '404':
     description: The specified data collection or filter does not exist in the pack
 tags:
   - Documents
 x-amazon-apigateway-integration:
-  uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_document_update_document_by_filter/invocations
+  uri: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_document/invocations
   type: aws_proxy
-  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_document_update_document_by_filter_role
+  credentials: arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_document_role
   httpMethod: POST
 x-amazon-apigateway-request-validator: all

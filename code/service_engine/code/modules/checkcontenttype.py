@@ -17,7 +17,7 @@ from .apigwresponse import api_gw_response
 
 def check_content_type(func):
     """
-    Decator to check if the content type is application/json otherwise return a 415
+    Decorator to check if the content type is application/json otherwise return a 415
 
     Parameters:
       func(Function): The function you want to execute

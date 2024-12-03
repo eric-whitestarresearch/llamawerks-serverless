@@ -15,5 +15,7 @@
 
 get:
   $ref: "./get.yaml"
-put:
-  $ref: "./put.yaml"
+post:
+  $ref: "./post.yaml"
+options:
+  $ref: "./options.yaml"

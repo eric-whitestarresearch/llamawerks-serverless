@@ -21,3 +21,5 @@ patch:
   $ref: "./patch.yaml"
 delete:
   $ref: "./delete.yaml"
+options:
+  $ref: "./options.yaml"

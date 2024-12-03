@@ -22,6 +22,8 @@ from os import environ
 from modules.vpc_endpoint import vpc_endpoint
 from modules.api_gateway import api_gateway
 from modules.aws_lambda import aws_lambda
+from modules.aws_lambda_execution_role import aws_lambda_execution_role 
+
 class MisssingConfigException(BaseException):
   pass
 
@@ -71,6 +73,8 @@ rest_api_gw = api_gateway(f"lw_api_gw_{environment}",
                           private=True,
                           endpoint_ids=[api_gateway_endpoint.id])
 
+execution_role = aws_lambda_execution_role()
+
 with open('./lambda.yaml','r') as file:
       lambda_configs = yaml.safe_load(file)
 
@@ -79,7 +83,10 @@ aws_lambdas = [aws_lambda(name=l['name'],
                            package_checksum_location=l['package_checksum_location'],
                            handler=l['handler'],
                            subnets=subnets,
-                           vpc_id=IAC_CONFIG['vpc']['vpc_id']) for l in lambda_configs['lambdas']]
+                           vpc_id=IAC_CONFIG['vpc']['vpc_id'],
+                           execution_role_arn=execution_role.arn,
+                           database=IAC_CONFIG['database'],
+                           mongodb_host=IAC_CONFIG['mongodb_host']) for l in lambda_configs['lambdas']]
 
 
 # test_lambda = aws_lambda(name="lw_test",

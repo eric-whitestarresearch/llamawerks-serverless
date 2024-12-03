@@ -24,7 +24,7 @@ import string
 def test_e2e_get_document(document_single):
   BASE_URL = environ.get('API_BASE_URL')
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document")
   response = urllib.request.urlopen(req)
 
   document_count = len(loads(response.read().decode('utf-8')))
@@ -35,7 +35,7 @@ def test_e2e_get_document(document_single):
 def test_e2e_get_all_documents(document_multi):
   BASE_URL = environ.get('API_BASE_URL')
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_multi[0]['pack_name']}/data_collection/{document_multi[0]['data_collection_name']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_multi[0]['pack_name']}/data_collection/{document_multi[0]['data_collection_name']}/document")
   response = urllib.request.urlopen(req)
 
   document_count = len(loads(response.read().decode('utf-8')))
@@ -49,7 +49,7 @@ def test_e2e_get_document_data_collection_does_not_exist():
   pack_name = "blarf"
   data_collection_name = ''.join(random.choices(string.ascii_letters,k=10))
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document")
   
   error_code = None
   try:
@@ -63,7 +63,7 @@ def test_e2e_get_document_data_collection_does_not_exist():
 def test_get_data_collection_none_in_pack(empty_data_collection):
   BASE_URL = environ.get('API_BASE_URL')
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{empty_data_collection['pack_name']}/data_collection/{empty_data_collection['data_collection_name']}")
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{empty_data_collection['pack_name']}/data_collection/{empty_data_collection['data_collection_name']}/document")
   response = urllib.request.urlopen(req)
 
   assert response.getcode() == 204

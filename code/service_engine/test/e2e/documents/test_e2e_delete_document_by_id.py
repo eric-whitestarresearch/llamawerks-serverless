@@ -27,7 +27,7 @@ from secrets import token_hex
 def test_e2e_delete_document_by_id(document_single):
   BASE_URL = environ.get('API_BASE_URL')
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{document_single['doc_id']}", method='DELETE')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{document_single['doc_id']}", method='DELETE')
   response = urllib.request.urlopen(req)
 
   del_count = loads(response.read().decode('utf-8'))
@@ -39,10 +39,10 @@ def test_e2e_delete_document_by_id_resubmit(document_single):
   BASE_URL = environ.get('API_BASE_URL')
   
   
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{document_single['doc_id']}", method='DELETE')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{document_single['doc_id']}", method='DELETE')
   response = urllib.request.urlopen(req)
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{document_single['doc_id']}", method='DELETE')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{document_single['doc_id']}", method='DELETE')
   response = urllib.request.urlopen(req)
 
   del_count = loads(response.read().decode('utf-8'))
@@ -56,7 +56,7 @@ def test_e2e_delete_docuemnt_not_exist(document_single):
  
   doc_id = token_hex(12)
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/id/{doc_id}", method='DELETE')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{document_single['pack_name']}/data_collection/{document_single['data_collection_name']}/document/id/{doc_id}", method='DELETE')
   response = urllib.request.urlopen(req)
 
   del_count = loads(response.read().decode('utf-8'))
@@ -71,7 +71,7 @@ def test_e2e_delete_document_by_id_data_collection_not_exist():
   pack_name = "blarf"
   doc_id = token_hex(12)
  
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/id/{doc_id}", method='DELETE')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{data_collection_name}/document/id/{doc_id}", method='DELETE')
 
   error_code = None
 

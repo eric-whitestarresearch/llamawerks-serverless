@@ -14,6 +14,9 @@
 #      limitations under the License.
 
 from .servicecomponent import ServiceComponent
+from .datacollectiondocument import DataCollectionDocument
+from .serviceexecution import ServiceExecution
+from .apigwresponse import api_gw_response
 
 class Service(ServiceComponent):
   """
@@ -100,3 +103,147 @@ class Service(ServiceComponent):
     """
 
     return self.update_serivce_component(pack_name, service_definition)
+  
+  def render_service(self, pack_name, service_name):
+    """
+    Retrieve the data for all fields used in a service
+
+    Parameters:
+      pack_name (String): The name of the pack the service(s) is in
+      service_name (String): The name of the service (Optional)
+
+    Returns:
+      List: A list of dictonaries containing the field used in the service
+      Int: HTTP status code
+    """
+
+    service_definition = self.get_service_component(pack_name, service_name, encode=False)
+    
+    try:
+      assert service_definition['statusCode'] == 200
+    except AssertionError:
+      if service_definition['statusCode'] == 404:
+        return service_definition #We got a 404 back so just return it up
+      else:
+        return api_gw_response(400, "Could not render service")
+    
+    document = DataCollectionDocument(self.db_client)
+
+    result = []
+    for field in service_definition['body'][0]['fields']:
+      result_field = {
+        "name": field['name'],
+        "display_name": field['display_name'],
+        "display_type": field['display_type'],
+        "selection_key": field['selection_key']
+      }
+
+      if not field['wait_to_render']:
+        field_docs = document.get_document_with_filter(pack_name=pack_name, 
+                                                      data_collection_name=field['data_collection'],
+                                                      filter_name=field['filter'],
+                                                      filter_variables={},
+                                                      project=True,
+                                                      encode=False)
+        try:
+          assert field_docs['statusCode'] == 200
+        except AssertionError:
+          if field_docs['statusCode'] == 404:
+            message = "Could not find data collection collection filter"
+          else:
+            message = "No documents match the data collection filter"
+          return api_gw_response(400, message)
+        result_field['values'] = field_docs['body']
+      else:
+        result_field['values'] = None
+      result.append(result_field)
+
+    return api_gw_response(200, result_field)
+  
+  def render_service_field(self, pack_name, service_name, field_name, variables):
+    """
+    Retreive the data for a field used in a service
+
+    Parameters:
+      pack_name (String): The name of the pack the service(s) is in
+      service_name (String): The name of the service (Optional)
+
+    Returns:
+      List: A list of dictonaries containing the field used in the service
+      Int: HTTP status code
+    """
+
+    service_definition = self.get_service_component(pack_name, service_name, encode=False)
+    
+    try:
+      assert service_definition['statusCode'] == 200
+    except AssertionError:
+      if service_definition['statusCode'] == 404:
+        return service_definition #We got a 404 back so just return it up
+      else:
+        return api_gw_response(400, "Could not render service")
+    
+    document = DataCollectionDocument(self.db_client)
+
+    target_field = None
+    for field in service_definition['body'][0]['fields']:
+      if field['name'] == field_name:
+        target_field = field
+        break
+
+    try:
+      assert target_field != None
+    except AssertionError:
+      return api_gw_response(404, f"Could not find field {field_name} in service {service_name}")
+
+    field_docs = document.get_document_with_filter(pack_name=pack_name, 
+                                                      data_collection_name=field['data_collection'],
+                                                      filter_name=field['filter'],
+                                                      filter_variables=variables,
+                                                      project=True,
+                                                      encode=True)
+    try:
+      assert field_docs['statusCode'] in [200,204]
+    except AssertionError:
+      if field_docs['statusCode'] == 404:
+        message = "Could not find data collection collection filter"
+        return api_gw_response(404, message)
+      else:
+        message = "Could rend the service field"
+        return api_gw_response(400, message)
+    
+    return field_docs
+  
+  def execute_service(self, pack_name, service_name, service_vars):
+    """
+    Retreive the data for a field used in a service
+
+    Parameters:
+      pack_name (String): The name of the pack the service(s) is in
+      service_name (String): The name of the service (Optional)
+      servies_vars (Dict): A dictonary of the variables for the service
+
+    Returns:
+      List: A list of dictonaries containing the field used in the service
+      Int: HTTP status code
+    """
+
+    service_definition = self.get_service_component(pack_name, service_name, encode=False)
+    
+    try:
+      assert service_definition['statusCode'] == 200
+    except AssertionError:
+      if service_definition['statusCode'] == 404:
+        return service_definition #We got a 404 back so just return it up
+      else:
+        return api_gw_response(400, "Could not execute service")
+      
+    try:
+      assert set(service_vars.keys()) == {i['name'] for i in service_definition['body'][0]['fields']}
+    except AssertionError:
+      return api_gw_response(400, "Variables in the execution request did not match those in the serivce definition")
+    
+    se = ServiceExecution(self.db_client)
+
+    return se.submit_service_execution(pack_name, service_name, service_vars)
+    

@@ -15,7 +15,7 @@
 
 from json import dumps
 
-def api_gw_response(status_code, body={}, headers={}):
+def api_gw_response(status_code, body={}, headers={}, encode = True):
   """"
   Builds a dictonary needed by AWS API GW to return the proper data to a client
 
@@ -23,6 +23,7 @@ def api_gw_response(status_code, body={}, headers={}):
     status_code (Int): The HTTP Status code
     body (Dict|String): Optional. A dictonary or string with the body of the response
     headers: The HTTP headers to add to the response. The CORS headers are added by default.
+    encode (Boolean): Should the body in the return be dumped to a text string
 
   Returns:
     Dicts. A dict with the schema that API Gateway expects
@@ -35,8 +36,9 @@ def api_gw_response(status_code, body={}, headers={}):
   headers['Access-Control-Allow-Origin'] = '*'
   headers['Access-Control-Allow-Methods'] = '*'
 
+  return_body = dumps(body) if encode else body
 
-  return {"body": dumps(body), "statusCode": status_code, "headers": headers}
+  return {"body": return_body, "statusCode": status_code, "headers": headers}
 
 
   

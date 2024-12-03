@@ -1,0 +1,24 @@
+{
+  "name": "feed_cat",
+  "pack": "blarf",
+  "fields": [{
+      "index": 0,
+      "name": "cat_name",
+      "display_name": "Cat Name",
+      "wait_to_render": false,
+      "filter": "has_not_been_fed",
+      "data_collection": "cats",
+      "display_type": "drop_down",
+      "selection_key": "name"
+  },
+  {
+    "index": 1,
+    "name": "cat_info",
+    "display_name": "Cat Information",
+    "wait_to_render": true,
+    "filter": "cat_name",
+    "data_collection": "cats",
+    "display_type": "grid",
+    "selection_key": "name"
+}]
+}

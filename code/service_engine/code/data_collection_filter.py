@@ -17,10 +17,36 @@ from modules.datacollectionfilter import DataCollectionFilter
 from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
+from modules.preparebody import prepare_body
 from json import loads
+from json.decoder import JSONDecodeError
 import logging
 import modules.logger
 
+def apigw_handler_filter(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'DELETE':
+      return delete_data_collection_filter(event, context)
+    case 'GET':
+      return get_data_collection_filter(event, context)
+    case 'PATCH':
+      return update_data_collection_filter(event, context)
+    case 'PUT':
+      return create_data_collection_filter(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+    
 def get_data_collection_filter(event,context):
   """
   Reurns the definition of the data collection filter(s)
@@ -48,6 +74,7 @@ def get_data_collection_filter(event,context):
 
 
 @check_content_type
+@prepare_body
 def create_data_collection_filter(event, context):
   """
   Creates a new data collection filter
@@ -67,11 +94,12 @@ def create_data_collection_filter(event, context):
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_filter_definition = loads(event['body'])
-
+  data_collection_filter_definition = event['body']
+  
   return dcf.create_data_collection_filter(pack_name,data_collection_filter_definition)
 
 @check_content_type
+@prepare_body
 def update_data_collection_filter(event, context):
   """
   Updates a data collection_filter
@@ -91,8 +119,8 @@ def update_data_collection_filter(event, context):
   dcf = DataCollectionFilter(Database())
 
   pack_name = event['pathParameters']['pack_name']
-  data_collection_filter_definition = loads(event['body'])
-
+  data_collection_filter_definition = event['body']
+  
   return dcf.update_data_collection_filter(pack_name,data_collection_filter_definition)
 
 def delete_data_collection_filter(event, context):

@@ -14,6 +14,8 @@
 #      limitations under the License.
 import json
 from .apigwresponse import api_gw_response
+from bson.objectid import ObjectId
+import re
 
 class ServiceComponent:
   """
@@ -55,20 +57,21 @@ class ServiceComponent:
       Bool: True if exist, false if not
     
     """
-    db_filter = {"pack": pack_name, "name": service_component_name}
-    service_items = [self.db_client.find_one_in_collection(self.db_collection,db_filter)]
+    db_filter = {"pack": str(pack_name), "name": str(service_component_name)}
+    service_items = [self.db_client.find_all_in_collection(self.db_collection,db_filter)]
     if service_items[0]:
       return True
     else:
       return False
 
-  def get_service_component(self, pack_name, service_component_name = None):
+  def get_service_component(self, pack_name, service_component_name = None, encode = True):
     """
     Retrieve the service component from the database
 
     Parameters:
       pack_name (String): The name of the pack the service item is in
       service_component_name (String): The name of the service component (Optional)
+      encode (Boolean): Should the body in the return be dumped to a text string
 
     Returns:
       List: A list of dictonaries that contain the service component definition(s)
@@ -76,39 +79,69 @@ class ServiceComponent:
     """
 
     if service_component_name:
-      db_filter = {"pack": pack_name, "name": service_component_name}
+      db_filter = {"pack": str(pack_name), "name": str(service_component_name)}
       if not self.service_component_exists(pack_name, service_component_name):
         return api_gw_response(404, f"Could not find {self.component_type_name} {service_component_name} in pack {pack_name}")
     else:
-      db_filter = {"pack": pack_name}
+      db_filter = {"pack": str(pack_name)}
       
     service_items = self.db_client.find_all_in_collection(self.db_collection,db_filter)
 
     if not len(service_items):
       return api_gw_response(204, service_items)  #The pack has no service items
     else: 
-      return api_gw_response(200, service_items)
+      return api_gw_response(200, service_items, encode=encode)
     
-  def delete_service_component(self, pack_name, service_component_name):
+  def get_service_component_by_filter(self, filter, projection, encode = True):
+    """
+    Retrieve the service component from the database
+
+    Parameters:
+      filter (Dict): The filter to use when queriring the database
+      projection (Dict): A mongo DB projection of the fields to include in the output
+      encode (Boolean): Should the body in the return be dumped to a text string
+
+    Returns:
+      List: A list of dictonaries that contain the service component definition(s)
+      Int: HTTP status code
+    """
+      
+    service_items = self.db_client.find_all_in_collection(self.db_collection,filter, projection)
+
+    if not len(service_items):
+      return api_gw_response(404, f"Could not find any {self.component_type_name} that matched the filter")  #The pack has no service items
+    else: 
+      return api_gw_response(200, service_items, encode=encode)
+    
+  def delete_service_component(self, pack_name = None, service_component_name = None, document_id = None):
     """
     Deletes a service component
 
     Parameters:
       pack_name (String): The name of the pack the data collection is in
       service_component_name (String): The name of the service component to delete
+      document_id (String): The mongo document id
 
     Returns:
       Dict: Key: deleted value: a count of the components deleted
       Int: HTTP status code
     """
 
-    db_filter = {'pack' : pack_name, 'name': service_component_name}
+    try:
+      assert (pack_name and service_component_name) or document_id #Make sure with have pack name and component name or a document id
+    except AssertionError:
+      api_gw_response(400, f"Must have a pack name and {service_component_name} name or a document id")
+
+    if document_id:
+      db_filter = {"_id": ObjectId(document_id)}
+    else:
+      db_filter = {'pack' : str(pack_name), 'name': str(service_component_name)}
+
     delete_count = self.db_client.delete_document(self.db_collection, db_filter)
 
     return api_gw_response(200, {"deleted" : delete_count})
   
-
-  def create_service_component(self,pack_name,service_component_definition):
+  def create_service_component(self,pack_name,service_component_definition, is_service_execution=False):
     """
     Creates a new service component
 
@@ -121,43 +154,56 @@ class ServiceComponent:
       Int: HTTP status code
     """
     
-    if pack_name != service_component_definition['pack']:
+    try:
+      assert pack_name == service_component_definition['pack']
+    except AssertionError:
       return api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
     
-    #Check to see if this data collection already exists. If it does, don't create it again.
-    filter = {'pack': pack_name, 'name': service_component_definition['name']}
-    data_collection = self.db_client.find_all_in_collection(self.db_collection, filter)
+    if not is_service_execution: #We want to always create an execution
+      #Check to see if this service component already exists. If it does, don't create it again.
+      filter = {'pack': str(pack_name), 'name': str(service_component_definition['name'])}
+      data_collection = self.db_client.find_all_in_collection(self.db_collection, filter)
 
-    if len(data_collection):
-      return api_gw_response(200, { "id": data_collection[0]['_id']['$oid'] })
+      if len(data_collection):
+        return api_gw_response(200, { "id": data_collection[0]['id'] })
     
     new_service_component_id = self.db_client.insert_document(self.db_collection, service_component_definition)
 
 
     return api_gw_response(201, { "id": new_service_component_id })
-  
-  def update_serivce_component(self, pack_name, service_component_definition):
+
+  def update_serivce_component(self, pack_name, service_component_definition, document_id = None):
     """
     Updates a service component
 
     Parameters:
       pack_name (String): The name of the pack to update the service component in
       service_component_definition (Dict): The definition of the service component
+      id (String): Optional mongodb record ID. A 24 character hex ID.
     
     Returns:
       Dict: Key: updated, value: a count of the updated components
       Int: HTTP status code
     """
     
-    if pack_name != service_component_definition['pack']:
-      return api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
-
     #Check to see if this service component already exists. If it does not, stop.
-    filter = {'pack': pack_name, 'name': service_component_definition['name']}
-    data_collection = self.db_client.find_one_in_collection(self.db_collection, filter)
+    if document_id:
+      filter = {"_id": ObjectId(document_id)}
+    else:
+      try:
+        assert pack_name == service_component_definition['pack']
+      except AssertionError:
+        return api_gw_response(422, f"The pack name specified in the URI and the {self.component_type_name} definition do not match")
+        
+      filter = {'pack': str(pack_name), 'name': str(service_component_definition['name'])}
 
-    if not data_collection:
-      return api_gw_response(404, f"The {self.component_type_name}  {service_component_definition['name']} in pack {pack_name} does not exist. Use put method to create it")
+    try:
+      assert self.db_client.find_all_in_collection(self.db_collection, filter)
+    except AssertionError:
+      if not document_id:
+        return api_gw_response(404, f"The {self.component_type_name}  {service_component_definition['name']} in pack {pack_name} does not exist. Use put method to create it")
+      else:
+        return api_gw_response(404, f"The {self.component_type_name}  with id {document_id} does not exist.")
 
     update_count = self.db_client.update_document(self.db_collection, filter, service_component_definition)
 

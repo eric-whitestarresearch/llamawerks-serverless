@@ -67,7 +67,7 @@ def document_single():
   }
 
   doc_data = bytes(dumps(doc_body).encode("utf-8"))
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}", data=doc_data, method='PUT')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}/document", data=doc_data, method='PUT')
   req.add_header("Content-Type", "application/json")
 
   response = urllib.request.urlopen(req)
@@ -76,7 +76,7 @@ def document_single():
 
   yield {"data_collection_name": dc_name, "pack_name": pack_name, "doc_id": doc_id['id'], 'body': doc_body}
 
-  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}/id/{doc_id['id']}", method='DELETE')
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}/document/id/{doc_id['id']}", method='DELETE')
   response = urllib.request.urlopen(req) #Delete the document
 
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
@@ -144,7 +144,7 @@ def document_multi():
   for doc_body in doc_bodies:
       
     doc_data = bytes(dumps(doc_body).encode("utf-8"))
-    req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}", data=doc_data, method='PUT')
+    req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}/document", data=doc_data, method='PUT')
     req.add_header("Content-Type", "application/json")
 
     response = urllib.request.urlopen(req)
@@ -155,7 +155,7 @@ def document_multi():
   yield documents
 
   for document in documents:
-    req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}/id/{document['doc_id']}", method='DELETE')
+    req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection/{dc_name}/document/id/{document['doc_id']}", method='DELETE')
     response = urllib.request.urlopen(req) #Delete the document
 
   req = urllib.request.Request(f"{BASE_URL}/service_engine/{pack_name}/data_collection?data_collection_name={dc_name}", method='DELETE')
