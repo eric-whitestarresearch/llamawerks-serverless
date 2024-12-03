@@ -21,6 +21,7 @@ from json import dumps, loads
 import random
 import string
 from secrets import token_hex
+from time import time
 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_e2e_post_exeuction(service_execution_multi):
@@ -37,6 +38,65 @@ def test_e2e_post_exeuction(service_execution_multi):
 
   assert response.getcode() == 200 and execution_count == len(service_execution_multi['execution_ids'])
 
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_post_exeuction_all_parameters(service_execution_multi):
+  BASE_URL = environ.get('API_BASE_URL')
+
+  body =  {"status":['submitted', 'in progress'],
+          "document_id": service_execution_multi['execution_ids'][0],
+          "pack":service_execution_multi['pack_name'],
+          "service_name": service_execution_multi['name'],
+          "before": (int(time())),
+          "after": (int(time())-(10*60)),
+          "fields":['status', 'document_id','service_name']}
+  
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/execution", data=data, method='POST')
+  req.add_header("Content-Type", "application/json")
+  response = urllib.request.urlopen(req)
+ 
+  execution_count = len(loads(response.read().decode('utf-8')))
+
+  assert response.getcode() == 200 and execution_count == 1
+
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_post_exeuction_before(service_execution_multi):
+  BASE_URL = environ.get('API_BASE_URL')
+
+  body =  {"status":['submitted', 'in progress'],
+          "pack":service_execution_multi['pack_name'],
+          "service_name": service_execution_multi['name'],
+          "before": (int(time()))}
+  
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/execution", data=data, method='POST')
+  req.add_header("Content-Type", "application/json")
+  response = urllib.request.urlopen(req)
+ 
+  execution_count = len(loads(response.read().decode('utf-8')))
+
+  assert response.getcode() == 200 and execution_count == len(service_execution_multi['execution_ids'])
+
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_post_exeuction_after(service_execution_multi):
+  BASE_URL = environ.get('API_BASE_URL')
+
+  body =  {"status":['submitted', 'in progress'],
+          "pack":service_execution_multi['pack_name'],
+          "service_name": service_execution_multi['name'],
+          "after": (int(time())-(10*60))}
+  
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/execution", data=data, method='POST')
+  req.add_header("Content-Type", "application/json")
+  response = urllib.request.urlopen(req)
+ 
+  execution_count = len(loads(response.read().decode('utf-8')))
+
+  assert response.getcode() == 200 and execution_count == len(service_execution_multi['execution_ids']) 
 @pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
 def test_e2e_post_exeuction_none_match(service_execution_multi):
   BASE_URL = environ.get('API_BASE_URL')
@@ -62,6 +122,44 @@ def test_e2e_post_exeuction_invalid_schema(service_execution_multi):
 
   pack_name = ''.join(random.choices(string.ascii_letters,k=10))
   body =  {"status":["asdf"]}
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/execution", data=data, method='POST')
+  req.add_header("Content-Type", "application/json")
+ 
+  error_code = None
+  try:
+    response = urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
+    error_code =  e.code 
+
+  assert error_code == 400
+
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_post_exeuction_invalid_before_time(service_execution_multi):
+  BASE_URL = environ.get('API_BASE_URL')
+
+  pack_name = ''.join(random.choices(string.ascii_letters,k=10))
+  body =  {"before":100.7}
+ 
+  data= bytes(dumps(body).encode("utf-8"))
+  req = urllib.request.Request(f"{BASE_URL}/service_engine/execution", data=data, method='POST')
+  req.add_header("Content-Type", "application/json")
+ 
+  error_code = None
+  try:
+    response = urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
+    error_code =  e.code 
+
+  assert error_code == 400
+
+@pytest.mark.skipif(environ.get('API_BASE_URL') == None, reason="e2e not enabled")
+def test_e2e_post_exeuction_invalid_after_time(service_execution_multi):
+  BASE_URL = environ.get('API_BASE_URL')
+
+  pack_name = ''.join(random.choices(string.ascii_letters,k=10))
+  body =  {"after":"asdf"}
  
   data= bytes(dumps(body).encode("utf-8"))
   req = urllib.request.Request(f"{BASE_URL}/service_engine/execution", data=data, method='POST')

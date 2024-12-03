@@ -201,7 +201,7 @@ class Service(ServiceComponent):
                                                       filter_name=field['filter'],
                                                       filter_variables=variables,
                                                       project=True,
-                                                      encode=False)
+                                                      encode=True)
     try:
       assert field_docs['statusCode'] in [200,204]
     except AssertionError:

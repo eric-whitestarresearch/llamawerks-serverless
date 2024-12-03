@@ -94,7 +94,7 @@ class ServiceExecution(ServiceComponent):
     if after and not before:
       filter["submission_time"] = {"$gte" : after}
     if after and before:
-      filter["submission_time"] = {"$and" : [{"$lte" : before}, {"$gte" : after}] }
+      filter["submission_time"] = {"$lte" : before, "$gte" : after}
 
     try:
       assert len(filter)

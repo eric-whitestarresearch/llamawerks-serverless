@@ -1,8 +1,8 @@
 from service import render_service, render_service_field, execute_service, apigw_handler_service_field
-from service_execution import update_service_execution, get_service_execution, search_service_execution, apigw_handler_execution_id
+from service_execution import update_service_execution, get_service_execution, search_service_execution, apigw_handler_execution_id, apigw_handler_execution
 
 from json import dumps, loads
-import time
+from time import time
 from secrets import token_hex
 
 # event = {
@@ -103,13 +103,30 @@ from secrets import token_hex
 # context={}
 # print(apigw_handler_execution_id(event,context))
 
-execution_id = 'ww' + token_hex(11)
+# execution_id = 'ww' + token_hex(11)
+# event = {
+#   'httpMethod':'POST',
+#  'pathParameters':{'document_id': execution_id},
+#  'queryStringParameters':{},
+#  'body':  dumps({"status":"in progress"}),
+#  'headers' : {'Content-Type':'application/json'}
+# }
+# context={}
+# print(apigw_handler_execution_id(event,context))
+
+body =  {"status":['submitted', 'in progress'],
+        "document_id": "674e3d30021680eadf14503b",
+        "pack": "LInvghlFpm",
+        "service_name": "RoGrWfsRfT",
+        "before": (int(time())),
+        "after": 1733180710,
+        "fields":['status', 'document_id','service_name']}
 event = {
   'httpMethod':'POST',
- 'pathParameters':{'document_id': execution_id},
+ 'pathParameters':{},
  'queryStringParameters':{},
- 'body':  dumps({"status":"in progress"}),
+ 'body':  dumps(body),
  'headers' : {'Content-Type':'application/json'}
 }
 context={}
-print(apigw_handler_execution_id(event,context))
+print(apigw_handler_execution(event, context))
