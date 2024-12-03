@@ -59,8 +59,8 @@ class ServiceExecution(ServiceComponent):
     """
 
     filter =  {"_id": ObjectId(document_id)}
-
-    return self.get_service_component_by_filter(filter)
+    projection = {}
+    return self.get_service_component_by_filter(filter, projection)
   
   def get_service_execution_by_filter(self, pack = None, service_name = None, document_id = None, status = None, before = None, after = None, fields = None):
     """
@@ -168,13 +168,15 @@ class ServiceExecution(ServiceComponent):
 
     document_updates = {
       'updated_time' : updated_time,
-      'status' : execution_updates['status'],
-      f"result.{execution_updates['result']['step']}" : {
+      'status' : execution_updates['status']
+    }
+
+    if 'result' in execution_updates:
+      document_updates[execution_updates['result']['step']] = {
         "output" : execution_updates['result']['output'],
         "error" : execution_updates['result']['error'],
         "status" : execution_updates['result']['status']
       }
-    }
 
     return self.update_serivce_component(pack_name='',
                                         service_component_definition=document_updates,

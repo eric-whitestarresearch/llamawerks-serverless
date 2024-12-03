@@ -194,7 +194,7 @@ class Service(ServiceComponent):
     try:
       assert target_field != None
     except AssertionError:
-      return api_gw_response(400, f"Could not find field {field_name} in service {service_name}")
+      return api_gw_response(404, f"Could not find field {field_name} in service {service_name}")
 
     field_docs = document.get_document_with_filter(pack_name=pack_name, 
                                                       data_collection_name=field['data_collection'],
@@ -203,15 +203,16 @@ class Service(ServiceComponent):
                                                       project=True,
                                                       encode=False)
     try:
-      assert field_docs['statusCode'] == 200
+      assert field_docs['statusCode'] in [200,204]
     except AssertionError:
       if field_docs['statusCode'] == 404:
         message = "Could not find data collection collection filter"
+        return api_gw_response(404, message)
       else:
-        message = "No documents match the data collection filter"
-      return api_gw_response(400, message)
+        message = "Could rend the service field"
+        return api_gw_response(400, message)
     
-    return api_gw_response(200, field_docs['body'])
+    return field_docs
   
   def execute_service(self, pack_name, service_name, service_vars):
     """

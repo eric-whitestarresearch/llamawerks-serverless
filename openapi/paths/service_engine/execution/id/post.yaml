@@ -25,7 +25,7 @@ requestBody:
       schema:
         $ref: "../../../../schemas/_index.yaml#/serviceExecution"
 responses:
-  "201":
+  "202":
     description: The service execution was updated
   "208":
     description: No changes to service execution

@@ -17,8 +17,11 @@ from modules.serviceexecution import ServiceExecution
 from modules.database import Database
 from modules.checkcontenttype import check_content_type
 from modules.preparebody import prepare_body
+from modules.validiatedocumentid import validate_doc_id
+from modules.apigwresponse import api_gw_response
 import logging
 import modules.logger
+import re
 
 
 def apigw_handler_execution(event, context):
@@ -61,7 +64,7 @@ def apigw_handler_execution_id(event, context):
     case _:
       raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
 
-
+@validate_doc_id
 def get_service_execution(event, context):
   """
   Returns the context of a service execution
@@ -107,11 +110,15 @@ def search_service_execution(event, context):
   status = None
   before = None
   after = None
+  fields = None
 
   body = event['body']
 
   if 'document_id' in body:
-     document_id = body['document_id']
+    document_id = body['document_id']
+    regex = '^[0-9a-f]{24}$'
+    if not re.search(regex, document_id):
+      return api_gw_response(400, "Document ID must be 24 hexadecimal lowercase characters")
   if 'status' in body:
     status = body['status']
   if 'pack' in body:
@@ -136,6 +143,7 @@ def search_service_execution(event, context):
                                             fields = fields)
 
 @check_content_type
+@validate_doc_id
 @prepare_body
 def update_service_execution(event, context):
   """
@@ -160,6 +168,7 @@ def update_service_execution(event, context):
 
   return se.update_service_execution(document_id,execution_updates)
 
+@validate_doc_id
 def delete_service_execution(event, context):
   """
   Deletes a service execution

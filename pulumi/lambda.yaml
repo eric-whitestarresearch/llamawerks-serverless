@@ -25,7 +25,7 @@ lambdas:
   package_checksum_location: ../code/service_engine/package.sum
   package_location: ../code/service_engine/package.zip
 - name: apigw_handler_service_field
-  handler: document.apigw_handler_service_field
+  handler: service.apigw_handler_service_field
   package_checksum_location: ../code/service_engine/package.sum
   package_location: ../code/service_engine/package.zip
 - name: apigw_handler_execution

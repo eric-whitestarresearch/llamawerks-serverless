@@ -66,6 +66,25 @@ def apigw_handler_service_name(event, context):
       return execute_service(event, context)
     case _:
       raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+
+def apigw_handler_service_field(event, context):
+  """
+  Calls the function that handles the HTTP method
+
+  Parameters:
+    pack_name (String): The name of the pack to create the data collections in
+    data_collection_definition (Dict): The definition of the data collection
+
+  Returns:
+    Dict with api gateway response 
+  """
+
+  match event['httpMethod']:
+    case 'POST':
+      return render_service_field(event, context)
+    case _:
+      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
+
 def get_services(event, context):
   """
   Reurns the definition of the service(s)

@@ -1214,7 +1214,7 @@ paths:
       x-amazon-apigateway-integration:
         uri: 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:lw_apigw_handler_service_field/invocations'
         type: aws_proxy
-        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_apigw_handler_service_field/_role'
+        credentials: 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/lw_api_apigw_handler_service_field_role'
         httpMethod: POST
       x-amazon-apigateway-request-validator: all
     options:
@@ -1308,7 +1308,7 @@ paths:
             schema:
               $ref: '#/components/schemas/serviceExecution'
       responses:
-        '201':
+        '202':
           description: The service execution was updated
         '208':
           description: No changes to service execution

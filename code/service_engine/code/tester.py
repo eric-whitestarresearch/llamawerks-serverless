@@ -1,7 +1,9 @@
-from service import render_service, render_service_field, execute_service
-from service_execution import update_service_execution, get_service_execution, search_service_execution
+from service import render_service, render_service_field, execute_service, apigw_handler_service_field
+from service_execution import update_service_execution, get_service_execution, search_service_execution, apigw_handler_execution_id
+
 from json import dumps, loads
 import time
+from secrets import token_hex
 
 # event = {
 #  'pathParameters':{'pack_name':'blarf','service_name':'feed_cat'},
@@ -14,16 +16,21 @@ import time
 # result = render_service(event=event,context=context)
 # print(result)
 
-# #Render a field from a service
+#Render a field from a service
 # event = {
-#  'pathParameters':{'pack_name':'blarf','service_name':'feed_cat', 'field_name':'cat_info'},
+#   'httpMethod':'POST',
+#  'pathParameters':{
+#     "pack_name": "qKnjiGZyaQ",
+#     "service_name": "WjiKeGIdWI",
+#     "field_name": "cat_info2"
+#   },
 #  'queryStringParameters':{},
-#  'body': dumps({'cat_name':'Boone'}),
+#  'body': dumps({'cat_name':'Axel'}),
 #  'headers' : {'Content-Type':'application/json'}
 # }
 # context ={}
 
-# result = render_service_field(event=event,context=context)
+# result = apigw_handler_service_field(event=event,context=context)
 # print(result)
 
 
@@ -68,19 +75,41 @@ import time
 # result = update_service_execution(event, context)
 # print(result)
 
-body = {
-  'status': ["wait for approval"],
-  'fields': ['pack', 'service_name', 'status','variables/cat_name']
-}
+# body = {
+#   'status': ["wait for approval"],
+#   'fields': ['pack', 'service_name', 'status','variables/cat_name']
+# }
+# event = {
+#  'pathParameters':{},
+#  'queryStringParameters':{},
+#  'body': dumps(body),
+#  'headers' : {'Content-Type':'application/json'}
+# }
+# context = {}
+# start = time.time()
+# result = search_service_execution(event, context)
+# end = time.time()
+# print(result)
+# print(f"Runtime: {end-start}")
+
+# execution_id = 'ww' + token_hex(11)
+# event = {
+#   'httpMethod':'GET',
+#  'pathParameters':{'document_id': execution_id},
+#  'queryStringParameters':{},
+#  'body':  "",
+#  'headers' : {}
+# }
+# context={}
+# print(apigw_handler_execution_id(event,context))
+
+execution_id = 'ww' + token_hex(11)
 event = {
- 'pathParameters':{},
+  'httpMethod':'POST',
+ 'pathParameters':{'document_id': execution_id},
  'queryStringParameters':{},
- 'body': dumps(body),
+ 'body':  dumps({"status":"in progress"}),
  'headers' : {'Content-Type':'application/json'}
 }
-context = {}
-start = time.time()
-result = search_service_execution(event, context)
-end = time.time()
-print(result)
-print(f"Runtime: {end-start}")
+context={}
+print(apigw_handler_execution_id(event,context))

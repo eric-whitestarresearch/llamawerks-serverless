@@ -18,11 +18,12 @@ from modules.database import Database
 from modules.apigwresponse import api_gw_response
 from modules.checkcontenttype import check_content_type
 from modules.preparebody import prepare_body
+from modules.validiatedocumentid import validate_doc_id
 import modules.logger
 from json import loads
 from json.decoder import JSONDecodeError
 import logging
-import re
+
 
 
 def apigw_handler_document(event, context):
@@ -71,47 +72,7 @@ def apigw_handler_document_id(event, context):
     case _:
       raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
     
-def apigw_handler_service_field(event, context):
-  """
-  Calls the function that handles the HTTP method
 
-  Parameters:
-    pack_name (String): The name of the pack to create the data collections in
-    data_collection_definition (Dict): The definition of the data collection
-
-  Returns:
-    Dict with api gateway response 
-  """
-
-  match event['httpMethod']:
-    case 'POST':
-      return get_document_with_filter(event, context)
-    case _:
-      raise NotImplementedError(f"Handler for endpoint {event['resource']} method {event['httpMethod']} not implemented")
-    
-def validate_doc_id(func):
-  """
-  Decorator to check if the document ID is valid
-
-  Parameters:
-    func(Function): The function you want to execute
-
-  Returns
-    The response of the function if the content type is correct, otherwise a HTTP 400
-  """
-
-  def wrapper(*args, **kwargs):
-    
-    event = kwargs['event'] if 'event' in kwargs else args[0]
-    document_id = event['pathParameters']['document_id'] #API Gateway will enforce the existance of the document id, but it won't validate it
-    regex = '^[0-9a-f]{24}$'
-
-    if not re.search(regex, document_id):
-      return api_gw_response(400, "Document ID must be 24 hexadecimal lowercase characters")
-    else:
-      return func(*args, **kwargs)
-    
-  return wrapper
 def get_documents(event, context):
   """
   Reurns documents in data collection
